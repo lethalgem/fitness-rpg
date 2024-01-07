@@ -1,12 +1,14 @@
 use log::error;
 use worker::Request;
 
-use crate::{errors::GeneralError, models::StravaAuthCode};
+use crate::{errors::GeneralError, models::StravaAuthCode, strava::strava};
 
 pub async fn auth_with_strava(mut req: Request) -> Result<String, GeneralError> {
     error!("{:?}", req);
-    let body = req.json::<StravaAuthCode>().await?;
-    let code = body.code;
-    Ok(code)
+    let auth_code = req.json::<StravaAuthCode>().await?;
+    let response = strava::request_access_token(auth_code).await?;
+    // let code = auth_code.code;
+
+    Ok(format!("{:?}", response))
     /* TODO: take code, send to strava, receive response, dump needed data to database -- then on to retrieving activities! */
 }

@@ -6,7 +6,7 @@ use crate::strava::errors::StravaAPIError;
 pub enum GeneralError {
     #[error("This error is expected. Only use when testing.")]
     TestError,
-    #[error("Failed to use Strava API")]
+    #[error(transparent)]
     StravaError(#[from] StravaAPIError),
     #[error("Failed to properly use Cloudflare Worker")]
     StravaAuthFailed(#[from] worker::Error),

@@ -1,6 +1,10 @@
+use std::env;
+
 use serde::{Deserialize, Serialize};
 
 use crate::models::StravaAuthCode;
+
+use super::errors::StravaAPIError;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AccessTokenRequest {
@@ -11,13 +15,19 @@ pub struct AccessTokenRequest {
 }
 
 impl AccessTokenRequest {
-    fn new(code: StravaAuthCode) -> AccessTokenRequest {
-        AccessTokenRequest {
-            client_id: std::env::var("CLIENT_ID").expect("$CLIENT_ID is not set"),
-            client_secret: std::env::var("CLIENT_SECRET").expect("$CLIENT_SECRET is not set"),
+    pub fn new(code: StravaAuthCode) -> Result<AccessTokenRequest, StravaAPIError> {
+        let client_id = env::var("CLIENT_ID")
+            .map_err(|_| StravaAPIError::MissingClientIdEnvironmentVariable)?;
+
+        let client_secret = env::var("CLIENT_SECRET")
+            .map_err(|_| StravaAPIError::MissingClientSecretEnvironmentVariable)?;
+
+        Ok(AccessTokenRequest {
+            client_id,
+            client_secret,
             code: code.code,
             grant_type: "authorization_code".to_owned(),
-        }
+        })
     }
 }
 

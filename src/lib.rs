@@ -10,8 +10,8 @@ use worker::*;
 
 // This is a shared data struct that we will pass to the router
 struct SharedData {
-    name: String,
     env: Environment,
+    db: D1Database,
 }
 
 pub struct Environment {
@@ -29,31 +29,30 @@ struct Comment {
 
 #[event(fetch)]
 async fn main(req: Request, env: Env, ctx: Context) -> Result<Response> {
-    // let shared_data = SharedData {
-    //     name: "Rusty".to_string(),
-    //     env: Environment {
-    //         client_id: env
-    //             .var("CLIENT_ID")
-    //             .expect("Missing Client ID environment variable")
-    //             .to_string(),
-    //         client_secret: env
-    //             .var("CLIENT_SECRET")
-    //             .expect("Missing Client Secret environment variable")
-    //             .to_string(),
-    //     },
-    // };
+    let shared_data = SharedData {
+        env: Environment {
+            client_id: env
+                .var("STRAVA_CLIENT_ID")
+                .expect("Missing Client ID environment variable")
+                .to_string(),
+            client_secret: env
+                .var("STRAVA_CLIENT_SECRET")
+                .expect("Missing Client Secret environment variable")
+                .to_string(),
+        },
+        db: env.d1("DATABASE")?,
+    };
 
-    // let router = Router::with_data(shared_data);
+    let router = Router::with_data(shared_data);
 
-    //TODO: Make an offline version of the database to reference when running locally
-
-    Router::new()
+    router
         .get("/", |_, ctx| Response::ok("Hello, World!"))
         .get("/strava-integration-redirect-uri", |mut req, ctx| {
             Response::ok("This will never exist, it will be in the front end")
         })
         .post_async("/auth_with_strava", |mut req, ctx| async move {
-            let d1 = ctx.env.d1("DATABASE")?;
+            // let d1 = ctx.env.d1("DATABASE")?;
+            let d1 = ctx.data.db;
             log(&format!("{:?}", d1.dump().await?));
             let statement = d1.prepare("SELECT * FROM comments LIMIT 3");
             // log(&format!("{:?}", statement.raw::<Customer>().await?));

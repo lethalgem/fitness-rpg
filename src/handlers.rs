@@ -1,9 +1,9 @@
 use log::error;
 use worker::Request;
 
-use crate::{errors::GeneralError, models::StravaAuthCode, strava::strava};
+use crate::{errors::GeneralError, models::StravaAuthCode, strava::strava, Environment};
 
-pub async fn auth_with_strava(mut req: Request) -> Result<String, GeneralError> {
+pub async fn auth_with_strava(mut req: Request, env: Environment) -> Result<String, GeneralError> {
     error!("{:?}", req);
     let auth_code = req.json::<StravaAuthCode>().await?;
     let response = strava::request_access_token(auth_code).await?;

@@ -5,5 +5,10 @@ compatibility_date = "2023-06-28"
 [build]
 command = "cargo install -q worker-build && worker-build --release"
 
+[[d1_databases]]
+name = "fitness-rpg-db"
+binding = "DATABASE"
+database_id = "18a48022-de48-4b42-85c1-88f052429d00"
+
 [vars]
 CLIENT_ID="119309"

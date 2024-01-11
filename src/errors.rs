@@ -8,6 +8,23 @@ pub enum GeneralError {
     TestError,
     #[error(transparent)]
     StravaError(#[from] StravaAPIError),
-    #[error("Failed to properly use Cloudflare Worker")]
-    StravaAuthFailed(#[from] worker::Error),
+    #[error(transparent)]
+    D1DbError(#[from] MyD1Error),
+    #[error(transparent)]
+    WorkerError(#[from] worker::Error),
+    #[error("Failed to find Strava client info in database")]
+    DbErrorNoStravaClientInfo,
 }
+
+use std::fmt;
+
+#[derive(Debug)]
+pub struct MyD1Error(worker::D1Error);
+
+impl fmt::Display for MyD1Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl std::error::Error for MyD1Error {}

@@ -24,8 +24,8 @@ globalThis.fetch = new Proxy(globalThis.fetch, {
 });
 
 // build/worker/shim.mjs
-import N from "./430d3544bb92085d9d555ed1de915b5b5a5267ff-index.wasm";
-import he from "./430d3544bb92085d9d555ed1de915b5b5a5267ff-index.wasm";
+import N from "./7975f0fed57e0efe328dab3cb50eb2d2a272de6b-index.wasm";
+import he from "./7975f0fed57e0efe328dab3cb50eb2d2a272de6b-index.wasm";
 var W = Object.defineProperty;
 var D = (e, t) => {
   for (var n in t)

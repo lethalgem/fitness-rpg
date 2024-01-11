@@ -1,3 +1,4 @@
+mod db;
 mod errors;
 mod handlers;
 mod helpers;
@@ -51,12 +52,9 @@ async fn main(req: Request, env: Env, ctx: Context) -> Result<Response> {
             Response::ok("This will never exist, it will be in the front end")
         })
         .post_async("/auth_with_strava", |mut req, ctx| async move {
-            // let d1 = ctx.env.d1("DATABASE")?;
             let d1 = ctx.data.db;
             log(&format!("{:?}", d1.dump().await?));
             let statement = d1.prepare("SELECT * FROM comments LIMIT 3");
-            // log(&format!("{:?}", statement.raw::<Customer>().await?));
-            // let query = statement.bind(&[id])?;
             let result = statement.all().await?;
             match result.results::<Comment>() {
                 Ok(thing) => Response::from_json(&thing),

@@ -12,8 +12,12 @@ pub enum GeneralError {
     D1DbError(#[from] MyD1Error),
     #[error(transparent)]
     WorkerError(#[from] worker::Error),
-    #[error("Failed to find Strava client info in database")]
-    DbErrorNoStravaClientInfo,
+    #[error("Failed to find Strava client auth info in database")]
+    DbErrorNoStravaClientAuthInfo,
+    #[error("Failed to write Strava athlete auth info in database")]
+    DBErrorFailedToWriteStravaAthleteAuthInfo,
+    #[error("{0}")]
+    DbError(String),
 }
 
 use std::fmt;

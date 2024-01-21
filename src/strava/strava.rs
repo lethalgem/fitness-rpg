@@ -1,4 +1,4 @@
-use crate::{db, helpers::log, models::StravaAuthCode, SharedData};
+use crate::{db, helpers::log, strava::models::StravaAuthCode, SharedData};
 
 use super::{
     errors::StravaAPIError,
@@ -9,14 +9,14 @@ const STRAVA_API_BASE_URL: &str = "https://www.strava.com/api/v3";
 
 pub async fn request_access_token_with_code(
     code: StravaAuthCode,
-    shared_data: SharedData,
+    shared_data: &SharedData,
 ) -> Result<AccessTokenResponse, StravaAPIError> {
     log("Starting request_access_token_with_code");
 
     let body = AccessTokenRequest::new(
         code,
-        shared_data.env.client_id,
-        shared_data.env.client_secret,
+        shared_data.env.client_id.clone(),
+        shared_data.env.client_secret.clone(),
     )?;
     let strava_auth_url = "https://www.strava.com/oauth/token";
 
@@ -29,7 +29,7 @@ pub async fn request_access_token_with_code(
     );
 
     log("Retrieving Strava client access token");
-    let client_access_token = db::retrieve_strava_client_access_token(shared_data.db)
+    let client_access_token = db::retrieve_strava_client_access_token(&shared_data.db)
         .await
         .map_err(Box::new)?;
     let header_value =

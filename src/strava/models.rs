@@ -1,10 +1,27 @@
-use std::env;
-
 use serde::{Deserialize, Deserializer, Serialize};
 
-use crate::models::StravaAuthCode;
-
 use super::errors::StravaAPIError;
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct StravaAuthCode {
+    pub code: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct StravaClientAuthInfo {
+    pub access_token: String,
+    pub refresh_token: String,
+    pub expires_at: String,
+    pub id: i32,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct StravaAthleteAuthInfo {
+    pub athlete_id: i32,
+    pub access_token: String,
+    pub refresh_token: String,
+    pub expires_at: String,
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AccessTokenRequest {

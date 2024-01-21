@@ -1,4 +1,4 @@
-use crate::models::StravaAuthCode;
+use crate::{db, helpers::log, models::StravaAuthCode, SharedData};
 
 use super::{
     errors::StravaAPIError,
@@ -7,10 +7,17 @@ use super::{
 
 const STRAVA_API_BASE_URL: &str = "https://www.strava.com/api/v3";
 
-pub async fn request_access_token(
+pub async fn request_access_token_with_code(
     code: StravaAuthCode,
+    shared_data: SharedData,
 ) -> Result<AccessTokenResponse, StravaAPIError> {
-    let body = AccessTokenRequest::new(code)?;
+    log("Starting request_access_token_with_code");
+
+    let body = AccessTokenRequest::new(
+        code,
+        shared_data.env.client_id,
+        shared_data.env.client_secret,
+    )?;
     let strava_auth_url = "https://www.strava.com/oauth/token";
 
     let client = reqwest::Client::new();
@@ -20,20 +27,27 @@ pub async fn request_access_token(
         "accept",
         reqwest::header::HeaderValue::from_static("application/json"),
     );
-    let client_access_token = std::env::var("CLIENT_ACCESS_TOKEN")
-        .map_err(|_| StravaAPIError::MissingClientAccessTokenEnvironmentVariable)?;
+
+    log("Retrieving Strava client access token");
+    let client_access_token = db::retrieve_strava_client_access_token(shared_data.db)
+        .await
+        .map_err(Box::new)?;
     let header_value =
         reqwest::header::HeaderValue::from_str(&format!("Bearer {}", client_access_token))?;
     headers.insert("Authorization", header_value);
 
+    log("Sending request to Strava");
     let req = client.post(strava_auth_url).headers(headers).json(&body);
 
     let response = req.send().await?;
-    if response.status().is_success() {
-        let body = response.text().await?;
-        let auth_response: AccessTokenResponse = serde_json::from_str(&body)?;
-        Ok(auth_response)
-    } else {
-        Err(StravaAPIError::FailedStravaAuthResponse)
+    match response.error_for_status() {
+        Ok(response) => {
+            log("Received successful response from Strava");
+            let body = response.text().await?;
+            log(&format!("body received: {}", body));
+            let auth_response: AccessTokenResponse = serde_json::from_str(&body)?;
+            Ok(auth_response)
+        }
+        Err(e) => Err(StravaAPIError::ReqwestError(e)),
     }
 }

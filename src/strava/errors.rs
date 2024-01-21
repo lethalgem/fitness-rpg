@@ -1,19 +1,17 @@
 use thiserror::Error;
 
+use crate::errors::GeneralError;
+
 #[derive(Error, Debug)]
 pub enum StravaAPIError {
     #[error("Strava Auth API Responsed with Failure")]
     FailedStravaAuthResponse,
-    #[error("Strava API Auth Request Client ID Environment Variable Missing")]
-    MissingClientIdEnvironmentVariable,
-    #[error("Strava API Auth Request Client Secret Environment Variable Missing")]
-    MissingClientSecretEnvironmentVariable,
-    #[error("Strava API Client Access Token Environment Variable Missing")]
-    MissingClientAccessTokenEnvironmentVariable,
-    #[error("Strava API Invalid Header")]
+    #[error(transparent)]
     HeaderValueCreationError(#[from] reqwest::header::InvalidHeaderValue),
-    #[error("Strava API Reqwest Error")]
+    #[error(transparent)]
     ReqwestError(#[from] reqwest::Error),
-    #[error("Strava API Json Error")]
+    #[error(transparent)]
     SerdeJsonError(#[from] serde_json::Error),
+    #[error(transparent)]
+    DBError(#[from] Box<GeneralError>),
 }

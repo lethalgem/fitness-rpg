@@ -5,12 +5,11 @@ mod helpers;
 mod models;
 mod strava;
 use handlers::*;
-use helpers::log;
 use serde::{Deserialize, Serialize};
 use worker::*;
 
 // This is a shared data struct that we will pass to the router
-struct SharedData {
+pub struct SharedData {
     env: Environment,
     db: D1Database,
 }
@@ -52,21 +51,10 @@ async fn main(req: Request, env: Env, ctx: Context) -> Result<Response> {
             Response::ok("This will never exist, it will be in the front end")
         })
         .post_async("/auth_with_strava", |mut req, ctx| async move {
-            let d1 = ctx.data.db;
-            log(&format!("{:?}", d1.dump().await?));
-            let statement = d1.prepare("SELECT * FROM comments LIMIT 3");
-            let result = statement.all().await?;
-            match result.results::<Comment>() {
-                Ok(thing) => Response::from_json(&thing),
-                Err(_) => Response::error("Not found", 404),
+            match auth_with_strava(req, ctx.data).await {
+                Ok(code) => Response::ok(code),
+                Err(err) => Response::ok(format!("{}", err)),
             }
-
-            // Response::ok("body")
-
-            // match auth_with_strava(req, ctx.data.env).await {
-            //     Ok(code) => Response::ok(code),
-            //     Err(err) => Response::ok(format!("{}", err)),
-            // }
         })
         .get("/shared-data", |_, ctx| {
             // let shared_data = ctx.env.name;

@@ -12,3 +12,11 @@ pub struct StravaClientInfo {
     pub expires_at: String,
     pub id: u32,
 }
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct StravaAthleteInfo {
+    pub access_token: String,
+    pub refresh_token: String,
+    pub expires_at: String,
+    pub id: u32,
+}

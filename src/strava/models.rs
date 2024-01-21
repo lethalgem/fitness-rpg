@@ -1,6 +1,6 @@
 use std::env;
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::models::StravaAuthCode;
 
@@ -15,13 +15,11 @@ pub struct AccessTokenRequest {
 }
 
 impl AccessTokenRequest {
-    pub fn new(code: StravaAuthCode) -> Result<AccessTokenRequest, StravaAPIError> {
-        let client_id = env::var("CLIENT_ID")
-            .map_err(|_| StravaAPIError::MissingClientIdEnvironmentVariable)?;
-
-        let client_secret = env::var("CLIENT_SECRET")
-            .map_err(|_| StravaAPIError::MissingClientSecretEnvironmentVariable)?;
-
+    pub fn new(
+        code: StravaAuthCode,
+        client_id: String,
+        client_secret: String,
+    ) -> Result<AccessTokenRequest, StravaAPIError> {
         Ok(AccessTokenRequest {
             client_id,
             client_secret,
@@ -71,14 +69,33 @@ pub struct Athlete {
     pub clubs: Option<Vec<Club>>,
     pub shoes: Option<Vec<Gear>>,
     pub bikes: Option<Vec<Gear>>,
+    pub username: Option<String>,
+    pub bio: Option<String>,
+    pub summit: Option<bool>,
+    pub badge_type_id: Option<i32>,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub enum ResourceState {
     Unknown,
     Meta,
     Summary,
     Detailed,
+}
+
+impl<'de> Deserialize<'de> for ResourceState {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let i = i32::deserialize(deserializer)?;
+        match i {
+            1 => Ok(ResourceState::Meta),
+            2 => Ok(ResourceState::Summary),
+            3 => Ok(ResourceState::Detailed),
+            _ => Ok(ResourceState::Unknown),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

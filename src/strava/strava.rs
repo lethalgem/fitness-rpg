@@ -70,9 +70,7 @@ pub async fn refresh_athlete_access_token_if_necessary(
     log("Starting refresh_athlete_access_token_if_necessary function");
 
     let current_time = Date::now().as_millis() / 1000;
-
     log(&format!("current_time: {}", current_time));
-
     let ten_min_buffer = 600;
     if current_time >= (athlete_auth_info.expires_at.parse::<u64>()? + ten_min_buffer) {
         log("Access token is expired or about to expire, refreshing...");
@@ -117,7 +115,6 @@ pub async fn request_access_token_with_refresh_token(
     );
 
     log("Retrieving Strava client access token");
-    // todo move this to beginning of worker?
     let client_access_token = db::retrieve_strava_client_access_token(&shared_data.db)
         .await
         .map_err(Box::new)?;

@@ -24,6 +24,7 @@ pub async fn retrieve_strava_client_access_token(db: &D1Database) -> Result<Stri
         .clone())
 }
 
+// TODO: Create strava.rs function to retrieve and always check if it expired or not. That way it only happens once and on request instead of needing it everywhere. Do the same with client info
 pub async fn retrieve_strava_athlete_auth_info(
     db: &D1Database,
     athlete_id: i32,

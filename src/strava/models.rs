@@ -8,11 +8,48 @@ pub struct StravaAuthCode {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct StravaAthleteId {
+    pub athlete_id: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct StravaClientAuthInfo {
     pub access_token: String,
     pub refresh_token: String,
     pub expires_at: String,
     pub id: i32,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct RefreshTokenRequest {
+    pub client_id: String,
+    pub client_secret: String,
+    pub refresh_token: String,
+    pub grant_type: String,
+}
+
+impl RefreshTokenRequest {
+    pub fn new(
+        refresh_token: String,
+        client_id: String,
+        client_secret: String,
+    ) -> Result<RefreshTokenRequest, StravaAPIError> {
+        Ok(RefreshTokenRequest {
+            client_id,
+            client_secret,
+            refresh_token,
+            grant_type: "refresh_token".to_owned(),
+        })
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct RefreshTokenResponse {
+    pub token_type: String,
+    pub expires_at: i64,
+    pub expires_in: i64,
+    pub refresh_token: String,
+    pub access_token: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

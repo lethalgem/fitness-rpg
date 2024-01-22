@@ -50,8 +50,14 @@ async fn main(req: Request, env: Env, ctx: Context) -> Result<Response> {
         .get("/strava-integration-redirect-uri", |mut req, ctx| {
             Response::ok("This will never exist, it will be in the front end")
         })
-        .post_async("/auth_with_strava", |mut req, ctx| async move {
-            match auth_with_strava(req, ctx.data).await {
+        .post_async("/auth_with_strava", |req, ctx| async move {
+            match auth_with_strava(req, &ctx.data).await {
+                Ok(code) => Response::ok(code),
+                Err(err) => Response::ok(format!("{}", err)),
+            }
+        })
+        .post_async("/get_strava_activities", |req, ctx| async move {
+            match retrieve_strava_activities(req, &ctx.data).await {
                 Ok(code) => Response::ok(code),
                 Err(err) => Response::ok(format!("{}", err)),
             }

@@ -18,9 +18,11 @@ pub enum GeneralError {
     DBErrorFailedToWriteStravaAthleteAuthInfo,
     #[error("{0}")]
     DbError(String),
+    #[error(transparent)]
+    ParseIntError(#[from] ParseIntError),
 }
 
-use std::fmt;
+use std::{fmt, num::ParseIntError};
 
 #[derive(Debug)]
 pub struct MyD1Error(worker::D1Error);

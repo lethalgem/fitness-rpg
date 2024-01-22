@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 use thiserror::Error;
 
 use crate::errors::GeneralError;
@@ -14,4 +16,6 @@ pub enum StravaAPIError {
     SerdeJsonError(#[from] serde_json::Error),
     #[error(transparent)]
     DBError(#[from] Box<GeneralError>),
+    #[error(transparent)]
+    ParseIntError(#[from] ParseIntError),
 }

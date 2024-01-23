@@ -6,11 +6,22 @@ use super::{
     errors::StravaAPIError,
     models::{
         AccessTokenRequest, AccessTokenResponse, RefreshTokenRequest, RefreshTokenResponse,
-        StravaAthleteAuthInfo,
+        StravaAthleteAuthInfo, StravaClientAuthInfo,
     },
 };
 
 const STRAVA_API_BASE_URL: &str = "https://www.strava.com/api/v3";
+
+pub async fn get_client_auth_info(
+    shared_data: &SharedData,
+) -> Result<StravaClientAuthInfo, StravaAPIError> {
+    log("going to retrieve all client auth info from db");
+    let client_auth_info = db::retrieve_strava_client_auth_info(&shared_data.db)
+        .await
+        .map_err(Box::new)?;
+    log("going to see if we need to refresh");
+    refresh_client_access_token_if_necessary(client_auth_info, shared_data).await
+}
 
 pub async fn get_athlete_auth_info(
     athlete_id: i32,
@@ -46,11 +57,11 @@ pub async fn request_access_token_with_code(
     );
 
     log("Retrieving Strava client access token");
-    let client_access_token = db::retrieve_strava_client_access_token(&shared_data.db)
-        .await
-        .map_err(Box::new)?;
-    let header_value =
-        reqwest::header::HeaderValue::from_str(&format!("Bearer {}", client_access_token))?;
+    let client_auth_info = get_client_auth_info(shared_data).await?;
+    let header_value = reqwest::header::HeaderValue::from_str(&format!(
+        "Bearer {}",
+        client_auth_info.access_token
+    ))?;
     headers.insert("Authorization", header_value);
 
     log("Sending request to Strava");
@@ -78,7 +89,11 @@ pub async fn refresh_athlete_access_token_if_necessary(
     let current_time = Date::now().as_millis() / 1000;
     log(&format!("current_time: {}", current_time));
     let ten_min_buffer = 600;
-    if current_time >= (athlete_auth_info.expires_at.parse::<u64>()? + ten_min_buffer) {
+    log(&format!(
+        "expires_at: {}",
+        athlete_auth_info.expires_at.clone()
+    ));
+    if current_time >= (athlete_auth_info.expires_at.parse::<u64>()? - ten_min_buffer) {
         log("Access token is expired or about to expire, refreshing...");
         let updated_athlete_auth_info_response =
             request_access_token_with_refresh_token(&athlete_auth_info.refresh_token, shared_data)
@@ -96,6 +111,33 @@ pub async fn refresh_athlete_access_token_if_necessary(
     } else {
         log("Access token is still valid, no need to refresh");
         Ok(athlete_auth_info)
+    }
+}
+
+pub async fn refresh_client_access_token_if_necessary(
+    client_auth_info: StravaClientAuthInfo,
+    shared_data: &SharedData,
+) -> Result<StravaClientAuthInfo, StravaAPIError> {
+    log("Starting refresh_client_access_token_if_necessary function");
+
+    let current_time = Date::now().as_millis() / 1000;
+    log(&format!("current_time: {}", current_time));
+    let ten_min_buffer = 600;
+    if current_time >= (client_auth_info.expires_at.parse::<u64>()? - ten_min_buffer) {
+        log("Access token is expired or about to expire, refreshing...");
+        let updated_client_auth_info_response =
+            request_access_token_with_refresh_token(&client_auth_info.refresh_token, shared_data)
+                .await?;
+        log("Received updated athlete auth info response");
+        let confirmed_updated_client_auth_info =
+            db::write_updated_client_auth_info(updated_client_auth_info_response, &shared_data.db)
+                .await
+                .map_err(Box::new)?;
+        log("Updated athlete auth info written to database");
+        Ok(confirmed_updated_client_auth_info)
+    } else {
+        log("Access token is still valid, no need to refresh");
+        Ok(client_auth_info)
     }
 }
 
@@ -119,14 +161,6 @@ pub async fn request_access_token_with_refresh_token(
         "accept",
         reqwest::header::HeaderValue::from_static("application/json"),
     );
-
-    log("Retrieving Strava client access token");
-    let client_access_token = db::retrieve_strava_client_access_token(&shared_data.db)
-        .await
-        .map_err(Box::new)?;
-    let header_value =
-        reqwest::header::HeaderValue::from_str(&format!("Bearer {}", client_access_token))?;
-    headers.insert("Authorization", header_value);
 
     log("Sending request to Strava");
     let req = client.post(strava_auth_url).headers(headers).json(&body);

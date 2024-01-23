@@ -8,7 +8,9 @@ use crate::{
     },
 };
 
-pub async fn retrieve_strava_client_access_token(db: &D1Database) -> Result<String, GeneralError> {
+pub async fn retrieve_strava_client_auth_info(
+    db: &D1Database,
+) -> Result<StravaClientAuthInfo, GeneralError> {
     let statement = db.prepare(
         "SELECT id, access_token, refresh_token, expires_at FROM strava_client_info WHERE id=1",
     );
@@ -16,15 +18,47 @@ pub async fn retrieve_strava_client_access_token(db: &D1Database) -> Result<Stri
     let info = result.results::<StravaClientAuthInfo>()?;
     log(&format!("{:?}", info));
 
-    // TODO: deal with having an expired token
     Ok(info
         .first()
         .ok_or_else(|| GeneralError::DbErrorNoStravaClientAuthInfo)?
-        .access_token
         .clone())
 }
 
-// TODO: Create strava.rs function to retrieve and always check if it expired or not. That way it only happens once and on request instead of needing it everywhere. Do the same with client info
+pub async fn write_updated_client_auth_info(
+    updated_client_auth_info: RefreshTokenResponse,
+    db: &D1Database,
+) -> Result<StravaClientAuthInfo, GeneralError> {
+    let write_statement = db.prepare(
+        "UPDATE strava_client_info 
+        SET access_token = ?2, expires_at = ?3, refresh_token = ?4 
+        WHERE id = ?1;",
+    );
+    let params = [
+        1.into(),
+        updated_client_auth_info.access_token.clone().into(),
+        updated_client_auth_info.expires_at.to_string().into(),
+        updated_client_auth_info.refresh_token.clone().into(),
+    ];
+    let query = write_statement.bind(&params)?;
+    let result = query.run().await?;
+
+    match result.error() {
+        Some(e) => {
+            log("failed to write data");
+            Err(GeneralError::DbError(e))
+        }
+        None => {
+            log("successfully wrote data");
+            Ok(StravaClientAuthInfo {
+                id: 1,
+                access_token: updated_client_auth_info.access_token,
+                refresh_token: updated_client_auth_info.refresh_token,
+                expires_at: updated_client_auth_info.expires_at.to_string(),
+            })
+        }
+    }
+}
+
 pub async fn retrieve_strava_athlete_auth_info(
     db: &D1Database,
     athlete_id: i32,

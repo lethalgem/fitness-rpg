@@ -1,12 +1,6 @@
-use worker::{Date, DateInit};
+use worker::Date;
 
-use crate::{
-    db,
-    helpers::log,
-    strava::models::StravaAuthCode,
-    wasm_bindgen::__rt::std::time::{SystemTime, UNIX_EPOCH},
-    SharedData,
-};
+use crate::{db, helpers::log, strava::models::StravaAuthCode, SharedData};
 
 use super::{
     errors::StravaAPIError,
@@ -17,6 +11,18 @@ use super::{
 };
 
 const STRAVA_API_BASE_URL: &str = "https://www.strava.com/api/v3";
+
+pub async fn get_athlete_auth_info(
+    athlete_id: i32,
+    shared_data: &SharedData,
+) -> Result<StravaAthleteAuthInfo, StravaAPIError> {
+    log("going to retrieve all auth info from db");
+    let athlete_auth_info = db::retrieve_strava_athlete_auth_info(&shared_data.db, athlete_id)
+        .await
+        .map_err(Box::new)?;
+    log("going to see if we need to refresh");
+    refresh_athlete_access_token_if_necessary(athlete_auth_info, shared_data).await
+}
 
 pub async fn request_access_token_with_code(
     code: StravaAuthCode,

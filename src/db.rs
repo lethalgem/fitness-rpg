@@ -117,7 +117,7 @@ pub async fn write_athlete_auth_info(
 
 pub async fn write_updated_athlete_auth_info(
     updated_athlete_auth_info: RefreshTokenResponse,
-    athlete_id: i32,
+    athlete_id: i64,
     db: &D1Database,
 ) -> Result<StravaAthleteAuthInfo, GeneralError> {
     let write_statement = db.prepare(

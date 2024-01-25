@@ -17,7 +17,7 @@ pub struct StravaClientAuthInfo {
     pub access_token: String,
     pub refresh_token: String,
     pub expires_at: String,
-    pub id: i32,
+    pub id: i64,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -54,7 +54,7 @@ pub struct RefreshTokenResponse {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct StravaAthleteAuthInfo {
-    pub athlete_id: i32,
+    pub athlete_id: i64,
     pub access_token: String,
     pub refresh_token: String,
     pub expires_at: String,
@@ -95,7 +95,7 @@ pub struct AccessTokenResponse {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Athlete {
-    pub id: i32,
+    pub id: i64,
     pub resource_state: ResourceState,
     pub firstname: Option<String>,
     pub lastname: Option<String>,
@@ -126,7 +126,7 @@ pub struct Athlete {
     pub username: Option<String>,
     pub bio: Option<String>,
     pub summit: Option<bool>,
-    pub badge_type_id: Option<i32>,
+    pub badge_type_id: Option<i64>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -154,7 +154,7 @@ impl<'de> Deserialize<'de> for ResourceState {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Club {
-    id: i32,
+    id: i64,
     resource_state: ResourceState,
     name: String,
 
@@ -183,10 +183,56 @@ pub struct Club {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[allow(non_camel_case_types)]
 pub enum SportType {
-    cycling,
-    running,
-    triathlon,
-    other,
+    AlpineSki,
+    BackcountrySki,
+    Badminton,
+    Canoeing,
+    Crossfit,
+    EBikeRide,
+    Elliptical,
+    EMountainBikeRide,
+    Golf,
+    GravelRide,
+    Handcycle,
+    HighIntensityIntervalTraining,
+    Hike,
+    IceSkate,
+    InlineSkate,
+    Kayaking,
+    Kitesurf,
+    MountainBikeRide,
+    NordicSki,
+    Pickleball,
+    Pilates,
+    Racquetball,
+    Ride,
+    RockClimbing,
+    RollerSki,
+    Rowing,
+    Run,
+    Sail,
+    Skateboard,
+    Snowboard,
+    Snowshoe,
+    Soccer,
+    Squash,
+    StairStepper,
+    StandUpPaddling,
+    Surfing,
+    Swim,
+    TableTennis,
+    Tennis,
+    TrailRun,
+    Velomobile,
+    VirtualRide,
+    VirtualRow,
+    VirtualRun,
+    Walk,
+    WeightTraining,
+    Wheelchair,
+    Windsurf,
+    Workout,
+    Yoga,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -218,4 +264,113 @@ pub enum FrameType {
     Cross,
     Road,
     TimeTrial,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct ListAthleteActivitiesRequest {
+    pub before: Option<i64>,
+    pub after: Option<i64>,
+    pub page: Option<i32>,
+    pub per_page: Option<i32>,
+}
+
+impl ListAthleteActivitiesRequest {
+    pub fn new(
+        before: Option<i64>,
+        after: Option<i64>,
+        page: Option<i32>,
+        per_page: Option<i32>,
+    ) -> ListAthleteActivitiesRequest {
+        ListAthleteActivitiesRequest {
+            before,
+            after,
+            page,
+            per_page,
+        }
+    }
+
+    pub fn default() -> ListAthleteActivitiesRequest {
+        ListAthleteActivitiesRequest {
+            before: None,
+            after: None,
+            page: None,
+            per_page: None,
+        }
+    }
+
+    pub fn new_with_page_number(page: i32) -> ListAthleteActivitiesRequest {
+        ListAthleteActivitiesRequest {
+            before: None,
+            after: None,
+            page: Some(page),
+            per_page: None,
+        }
+    }
+}
+
+// #[derive(Clone, Debug, Deserialize, Serialize)]
+pub type ListAthleteActivitiesResponse = Vec<SummaryActivity>;
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct SummaryActivity {
+    pub id: i64,
+    pub external_id: String,
+    pub upload_id: i64,
+    pub athlete: MetaAthlete,
+    pub name: String,
+    pub distance: f32,
+    pub moving_time: i32,
+    pub elapsed_time: i32,
+    pub total_elevation_gain: f32,
+    pub elev_high: f32,
+    pub elev_low: f32,
+    pub sport_type: SportType,
+    pub start_date: String,
+    pub start_date_local: String,
+    pub timezone: String,
+    pub start_latlng: Vec<f32>,
+    pub end_latlng: Vec<f32>,
+    pub achievement_count: i32,
+    pub kudos_count: i32,
+    pub comment_count: i32,
+    pub athlete_count: i32,
+    pub photo_count: i32,
+    pub total_photo_count: i32,
+    pub map: PolylineMap,
+    pub trainer: bool,
+    pub commute: bool,
+    pub manual: bool,
+    pub private: bool,
+    pub flagged: bool,
+    pub workout_type: Option<i32>,
+    pub upload_id_str: String,
+    pub average_speed: f32,
+    pub max_speed: f32,
+    pub has_kudoed: bool,
+    pub hide_from_home: Option<bool>,
+    pub gear_id: String,
+    pub kilojoules: f32,
+    pub average_watts: f32,
+    pub device_watts: bool,
+    pub max_watts: i32,
+    pub weighted_average_watts: i32,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct MetaAthlete {
+    pub id: i64,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Cords {
+    x: f32,
+    y: f32,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct PolylineMap {
+    id: String,
+    polyline: Option<String>,
+    summary_polyline: String,
+    resource_state: ResourceState,
 }

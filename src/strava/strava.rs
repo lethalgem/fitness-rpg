@@ -5,7 +5,8 @@ use crate::{db, helpers::log, strava::models::StravaAuthCode, SharedData};
 use super::{
     errors::StravaAPIError,
     models::{
-        AccessTokenRequest, AccessTokenResponse, RefreshTokenRequest, RefreshTokenResponse,
+        AccessTokenRequest, AccessTokenResponse, ListAthleteActivitiesRequest,
+        ListAthleteActivitiesResponse, RefreshTokenRequest, RefreshTokenResponse,
         StravaAthleteAuthInfo, StravaClientAuthInfo,
     },
 };
@@ -175,5 +176,48 @@ pub async fn request_access_token_with_refresh_token(
             Ok(auth_response)
         }
         Err(e) => Err(StravaAPIError::ReqwestError(e)),
+    }
+}
+
+pub async fn request_all_athlete_activities(
+    athlete_auth_info: &StravaAthleteAuthInfo,
+) -> Result<ListAthleteActivitiesResponse, StravaAPIError> {
+    log("Starting request_all_athlete_activities");
+
+    let strava_request_url = STRAVA_API_BASE_URL.to_owned() + "/athlete/activities";
+
+    let client = reqwest::Client::new();
+
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        "accept",
+        reqwest::header::HeaderValue::from_static("application/json"),
+    );
+
+    let header_value = reqwest::header::HeaderValue::from_str(&format!(
+        "Bearer {}",
+        athlete_auth_info.access_token
+    ))?;
+    headers.insert("Authorization", header_value);
+
+    log("Sending request to Strava");
+    let req = client
+        .get(strava_request_url)
+        .headers(headers)
+        .query(&[("per_page", "2")]);
+
+    let response = req.send().await?;
+    match response.error_for_status() {
+        Ok(response) => {
+            log("Received successful response from Strava");
+            let body = response.text().await?;
+            log(&format!("body received: {}", body));
+            let activities_response: ListAthleteActivitiesResponse = serde_json::from_str(&body)?;
+            Ok(activities_response)
+        }
+        Err(e) => {
+            log("Received error response from Strava");
+            Err(StravaAPIError::ReqwestError(e))
+        }
     }
 }

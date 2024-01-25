@@ -32,7 +32,7 @@ pub async fn retrieve_strava_activities(
         .await?
         .athlete_id
         .parse::<i32>()?;
-    let athlete_auth_info = strava::get_athlete_auth_info(athlete_id, shared_data).await;
-    // TODO: actually make call for activities
-    Ok(format!("{:?}", athlete_auth_info))
+    let athlete_auth_info = strava::get_athlete_auth_info(athlete_id, shared_data).await?;
+    let activites = strava::request_all_athlete_activities(&athlete_auth_info).await;
+    Ok(format!("{:?}", activites))
 }

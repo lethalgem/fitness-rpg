@@ -34,5 +34,8 @@ pub async fn retrieve_strava_activities(
         .parse::<i32>()?;
     let athlete_auth_info = strava::get_athlete_auth_info(athlete_id, shared_data).await?;
     let activites = strava::request_all_athlete_activities(&athlete_auth_info).await;
+    // TODO: paginate to get full amount
+    // TODO: write all activities to db
+    // maybe just pull a page then write to db then pull then write? Do I care about batching all of it rn? Would that be too much data to store in memory?
     Ok(format!("{:?}", activites))
 }

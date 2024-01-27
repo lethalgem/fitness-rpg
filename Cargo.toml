@@ -20,6 +20,8 @@ thiserror = "1.0.56"
 web-sys = "0.3.50"
 worker = { version = "0.0.18", features = ["d1"] }
 wasm-bindgen = "0.2.84"
+strum = "0.25"
+strum_macros = "0.25"
 
 [profile.release]
 lto = true

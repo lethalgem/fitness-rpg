@@ -1,4 +1,5 @@
 use serde::{Deserialize, Deserializer, Serialize};
+use strum_macros::{Display, EnumString};
 
 use super::errors::StravaAPIError;
 
@@ -202,7 +203,7 @@ pub struct Club {
     following_count: Option<i32>,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, EnumString, Display)]
 #[allow(non_camel_case_types)]
 pub enum SportType {
     AlpineSki,
@@ -280,7 +281,7 @@ pub struct Gear {
     pub description: Option<String>,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, EnumString, Display)]
 pub enum FrameType {
     MTB,
     Cross,
@@ -330,52 +331,51 @@ impl ListAthleteActivitiesRequest {
     }
 }
 
-// #[derive(Clone, Debug, Deserialize, Serialize)]
 pub type ListAthleteActivitiesResponse = Vec<SummaryActivity>;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SummaryActivity {
     pub id: i64,
-    pub external_id: String,
-    pub upload_id: i64,
-    pub athlete: MetaAthlete,
-    pub name: String,
-    pub distance: f32,
-    pub moving_time: i32,
-    pub elapsed_time: i32,
-    pub total_elevation_gain: f32,
-    pub elev_high: f32,
-    pub elev_low: f32,
-    pub sport_type: SportType,
-    pub start_date: String,
-    pub start_date_local: String,
-    pub timezone: String,
-    pub start_latlng: Vec<f32>,
-    pub end_latlng: Vec<f32>,
-    pub achievement_count: i32,
-    pub kudos_count: i32,
-    pub comment_count: i32,
-    pub athlete_count: i32,
-    pub photo_count: i32,
-    pub total_photo_count: i32,
-    pub map: PolylineMap,
-    pub trainer: bool,
-    pub commute: bool,
-    pub manual: bool,
-    pub private: bool,
-    pub flagged: bool,
+    pub external_id: Option<String>,
+    pub upload_id: Option<i64>,
+    pub athlete: Option<MetaAthlete>,
+    pub name: Option<String>,
+    pub distance: Option<f32>,
+    pub moving_time: Option<i32>,
+    pub elapsed_time: Option<i32>,
+    pub total_elevation_gain: Option<f32>,
+    pub elev_high: Option<f32>,
+    pub elev_low: Option<f32>,
+    pub sport_type: Option<SportType>,
+    pub start_date: Option<String>,
+    pub start_date_local: Option<String>,
+    pub timezone: Option<String>,
+    pub start_latlng: Option<Vec<f32>>,
+    pub end_latlng: Option<Vec<f32>>,
+    pub achievement_count: Option<i32>,
+    pub kudos_count: Option<i32>,
+    pub comment_count: Option<i32>,
+    pub athlete_count: Option<i32>,
+    pub photo_count: Option<i32>,
+    pub total_photo_count: Option<i32>,
+    pub map: Option<PolylineMap>,
+    pub trainer: Option<bool>,
+    pub commute: Option<bool>,
+    pub manual: Option<bool>,
+    pub private: Option<bool>,
+    pub flagged: Option<bool>,
     pub workout_type: Option<i32>,
-    pub upload_id_str: String,
-    pub average_speed: f32,
-    pub max_speed: f32,
-    pub has_kudoed: bool,
+    pub upload_id_str: Option<String>,
+    pub average_speed: Option<f32>,
+    pub max_speed: Option<f32>,
+    pub has_kudoed: Option<bool>,
     pub hide_from_home: Option<bool>,
-    pub gear_id: String,
-    pub kilojoules: f32,
-    pub average_watts: f32,
-    pub device_watts: bool,
-    pub max_watts: i32,
-    pub weighted_average_watts: i32,
+    pub gear_id: Option<String>,
+    pub kilojoules: Option<f32>,
+    pub average_watts: Option<f32>,
+    pub device_watts: Option<bool>,
+    pub max_watts: Option<i32>,
+    pub weighted_average_watts: Option<i32>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

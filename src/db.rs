@@ -1,11 +1,11 @@
-use worker::D1Database;
+use worker::{D1Database, D1PreparedStatement};
 
 use crate::{
     errors::GeneralError,
     helpers::log,
     strava::models::{
         AccessTokenResponse, RefreshTokenResponse, StravaAthleteAuthInfo,
-        StravaAthleteAuthInfoDbRep, StravaClientAuthInfo,
+        StravaAthleteAuthInfoDbRep, StravaClientAuthInfo, SummaryActivity,
     },
 };
 
@@ -157,4 +157,79 @@ pub async fn write_updated_athlete_auth_info(
             })
         }
     }
+}
+
+pub async fn write_athlete_activity_summary_info(
+    activities: &Vec<SummaryActivity>,
+    athlete_id: &i64,
+    db: &D1Database,
+) -> Result<(), GeneralError> {
+    log("starting to batch activity summary info");
+    let mut batched_statements: Vec<D1PreparedStatement> = Vec::new();
+    for activity in activities {
+        let write_statement = db.prepare(
+            "INSERT INTO strava_activity_info (athlete_id, activity_id, sport_type, moving_time, elapsed_time) 
+        VALUES (?1, ?2, ?3, ?4, ?5)
+        ON CONFLICT(activity_id) DO UPDATE SET 
+        athlete_id = excluded.athlete_id,
+        sport_type = excluded.sport_type,
+        moving_time = excluded.moving_time,
+        elapsed_time = excluded.elapsed_time",
+        );
+        let sport_type = activity
+            .sport_type
+            .as_ref()
+            .map_or("null".to_owned(), |sport| sport.to_string());
+        let moving_time = activity
+            .moving_time
+            .as_ref()
+            .map_or("null".to_owned(), |time| time.to_string());
+        let elapsed_time = activity
+            .elapsed_time
+            .as_ref()
+            .map_or("null".to_owned(), |time| time.to_string());
+        let params = [
+            athlete_id.to_string().into(),
+            activity.id.to_string().into(),
+            sport_type.into(),
+            moving_time.into(),
+            elapsed_time.into(),
+        ];
+        let bound_statement = write_statement.bind(&params)?;
+        batched_statements.push(bound_statement)
+    }
+
+    log("executing batched query with activity summary info");
+    let results = db.batch(batched_statements).await?;
+
+    log("checking batched query results for errors");
+    let errors: Vec<String> = results
+        .into_iter()
+        .filter_map(|result| result.error())
+        .collect();
+    if !errors.is_empty() {
+        for error in errors.clone() {
+            log(&error)
+        }
+        Err(GeneralError::DbError(errors.first().unwrap().to_string()))
+    } else {
+        log("successfully batched activity info");
+        Ok(())
+    }
+
+    // match result.error() {
+    //     Some(e) => {
+    //         log("failed to write data");
+    //         Err(GeneralError::DbError(e))
+    //     }
+    //     None => {
+    //         log("successfully wrote data");
+    //         Ok(StravaAthleteAuthInfo {
+    //             athlete_id,
+    //             access_token: updated_athlete_auth_info.access_token,
+    //             refresh_token: updated_athlete_auth_info.refresh_token,
+    //             expires_at: updated_athlete_auth_info.expires_at.to_string(),
+    //         })
+    //     }
+    // }
 }

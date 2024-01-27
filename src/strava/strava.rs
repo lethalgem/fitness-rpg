@@ -9,7 +9,7 @@ use super::{
     models::{
         AccessTokenRequest, AccessTokenResponse, ListAthleteActivitiesRequest,
         ListAthleteActivitiesResponse, RefreshTokenRequest, RefreshTokenResponse,
-        StravaAthleteAuthInfo, StravaClientAuthInfo,
+        StravaAthleteAuthInfo, StravaClientAuthInfo, SummaryActivity,
     },
 };
 
@@ -183,19 +183,31 @@ pub async fn request_access_token_with_refresh_token(
 
 pub async fn request_all_athlete_activities(
     athlete_auth_info: &StravaAthleteAuthInfo,
-) -> Result<ListAthleteActivitiesResponse, StravaAPIError> {
+) -> Result<Vec<SummaryActivity>, StravaAPIError> {
     log("Starting request_all_athlete_activities");
-    let yeet = request_specific_page_of_athlete_activities(athlete_auth_info, 1).await?;
-    Ok(yeet)
+    let mut activities: Vec<SummaryActivity> = Vec::new();
+    let mut page_number = 1;
+    let page_size = 100;
+    let mut poll_for_activities = true;
+    while poll_for_activities {
+        let mut activities_page =
+            request_specific_page_of_athlete_activities(athlete_auth_info, page_number, page_size)
+                .await?;
+        poll_for_activities = activities_page.len() == page_size as usize;
+        activities.append(&mut activities_page);
+        page_number += 1;
+    }
+    Ok(activities)
 }
 
 pub async fn request_specific_page_of_athlete_activities(
     athlete_auth_info: &StravaAthleteAuthInfo,
-    page: i32,
+    page_number: i32,
+    page_size: i32,
 ) -> Result<ListAthleteActivitiesResponse, StravaAPIError> {
     log(&format!(
         "Starting request_specific_page_of_athlete_activities for page: {}",
-        page
+        page_number.clone()
     ));
 
     let strava_request_url = STRAVA_API_BASE_URL.to_owned() + "/athlete/activities";
@@ -215,17 +227,17 @@ pub async fn request_specific_page_of_athlete_activities(
     headers.insert("Authorization", header_value);
 
     log("Sending request to Strava");
-    let req = client
-        .get(strava_request_url)
-        .headers(headers)
-        .query(&[("per_page", "30")]);
+    let req = client.get(strava_request_url).headers(headers).query(&[
+        ("per_page", &format!("{}", page_size)),
+        ("page", &format!("{}", page_number)),
+    ]);
 
     let response = req.send().await?;
     match response.error_for_status() {
         Ok(response) => {
             log("Received successful response from Strava");
             let body = response.text().await?;
-            log(&format!("body received: {}", body));
+            // log(&format!("body received: {}", body));
             let activities_response: ListAthleteActivitiesResponse = serde_json::from_str(&body)?;
             log(&format!(
                 "The useful size of `the activity vector` is {}",

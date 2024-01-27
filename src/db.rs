@@ -4,7 +4,8 @@ use crate::{
     errors::GeneralError,
     helpers::log,
     strava::models::{
-        AccessTokenResponse, RefreshTokenResponse, StravaAthleteAuthInfo, StravaClientAuthInfo,
+        AccessTokenResponse, RefreshTokenResponse, StravaAthleteAuthInfo,
+        StravaAthleteAuthInfoDbRep, StravaClientAuthInfo,
     },
 };
 
@@ -63,18 +64,22 @@ pub async fn retrieve_strava_athlete_auth_info(
     db: &D1Database,
     athlete_id: i32,
 ) -> Result<StravaAthleteAuthInfo, GeneralError> {
+    log("reading athlete auth info from db");
     let statement = db.prepare(
         "SELECT athlete_id, access_token, refresh_token, expires_at FROM strava_athlete_info WHERE athlete_id=?1",
     );
-    let query = statement.bind(&[athlete_id.into()])?;
+    let query = statement.bind(&[athlete_id.to_string().into()])?;
     let result = query.all().await?;
-    let info = result.results::<StravaAthleteAuthInfo>()?;
+    let info = result.results::<StravaAthleteAuthInfoDbRep>()?;
     log(&format!("retrieved athlete auth info: {:?}", info));
 
-    Ok(info
-        .first()
-        .ok_or_else(|| GeneralError::DbErrorNoStravaClientAuthInfo)?
-        .clone())
+    let auth_info = StravaAthleteAuthInfo::try_from(
+        info.first()
+            .ok_or_else(|| GeneralError::DbErrorNoStravaClientAuthInfo)?
+            .clone(),
+    )?;
+
+    Ok(auth_info)
 }
 
 pub async fn write_athlete_auth_info(
@@ -90,7 +95,7 @@ pub async fn write_athlete_auth_info(
     refresh_token = excluded.refresh_token",
     );
     let params = [
-        athlete_auth_info.athlete.id.into(),
+        athlete_auth_info.athlete.id.to_string().into(),
         athlete_auth_info.access_token.clone().into(),
         athlete_auth_info.expires_at.to_string().into(),
         athlete_auth_info.refresh_token.clone().into(),
@@ -129,7 +134,7 @@ pub async fn write_updated_athlete_auth_info(
     refresh_token = excluded.refresh_token",
     );
     let params = [
-        athlete_id.into(),
+        athlete_id.to_string().into(),
         updated_athlete_auth_info.access_token.clone().into(),
         updated_athlete_auth_info.expires_at.to_string().into(),
         updated_athlete_auth_info.refresh_token.clone().into(),

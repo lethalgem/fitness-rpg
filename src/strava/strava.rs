@@ -1,3 +1,5 @@
+use std::mem::size_of_val;
+
 use worker::Date;
 
 use crate::{db, helpers::log, strava::models::StravaAuthCode, SharedData};
@@ -183,6 +185,18 @@ pub async fn request_all_athlete_activities(
     athlete_auth_info: &StravaAthleteAuthInfo,
 ) -> Result<ListAthleteActivitiesResponse, StravaAPIError> {
     log("Starting request_all_athlete_activities");
+    let yeet = request_specific_page_of_athlete_activities(athlete_auth_info, 1).await?;
+    Ok(yeet)
+}
+
+pub async fn request_specific_page_of_athlete_activities(
+    athlete_auth_info: &StravaAthleteAuthInfo,
+    page: i32,
+) -> Result<ListAthleteActivitiesResponse, StravaAPIError> {
+    log(&format!(
+        "Starting request_specific_page_of_athlete_activities for page: {}",
+        page
+    ));
 
     let strava_request_url = STRAVA_API_BASE_URL.to_owned() + "/athlete/activities";
 
@@ -204,7 +218,7 @@ pub async fn request_all_athlete_activities(
     let req = client
         .get(strava_request_url)
         .headers(headers)
-        .query(&[("per_page", "2")]);
+        .query(&[("per_page", "30")]);
 
     let response = req.send().await?;
     match response.error_for_status() {
@@ -213,6 +227,10 @@ pub async fn request_all_athlete_activities(
             let body = response.text().await?;
             log(&format!("body received: {}", body));
             let activities_response: ListAthleteActivitiesResponse = serde_json::from_str(&body)?;
+            log(&format!(
+                "The useful size of `the activity vector` is {}",
+                size_of_val(&*activities_response)
+            ));
             Ok(activities_response)
         }
         Err(e) => {

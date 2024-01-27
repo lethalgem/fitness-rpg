@@ -60,6 +60,28 @@ pub struct StravaAthleteAuthInfo {
     pub expires_at: String,
 }
 
+impl TryFrom<StravaAthleteAuthInfoDbRep> for StravaAthleteAuthInfo {
+    type Error = std::num::ParseIntError;
+
+    fn try_from(item: StravaAthleteAuthInfoDbRep) -> Result<Self, Self::Error> {
+        let athlete_id = item.athlete_id.parse::<i64>()?;
+        Ok(StravaAthleteAuthInfo {
+            athlete_id,
+            access_token: item.access_token,
+            refresh_token: item.refresh_token,
+            expires_at: item.expires_at,
+        })
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct StravaAthleteAuthInfoDbRep {
+    pub athlete_id: String,
+    pub access_token: String,
+    pub refresh_token: String,
+    pub expires_at: String,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AccessTokenRequest {
     pub client_id: String,

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness RPG - Level Up IRL</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1>⚔️ Fitness RPG</h1>
+      <p class="tagline">Level up by working out in real life</p>
+    </header>
+
+    <!-- Welcome Screen (shown when not authenticated) -->
+    <div id="welcomeScreen" class="screen">
+      <div class="welcome-card">
+        <h2>Welcome, Adventurer!</h2>
+        <p>Connect your Strava account to start your fitness journey.</p>
+        <p class="description">
+          Every workout you do earns XP. Build your Strength and Endurance stats.
+          Level up and compete with friends!
+        </p>
+        <a href="/auth/strava/connect" class="btn btn-primary btn-large">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/>
+          </svg>
+          Connect with Strava
+        </a>
+        <p class="note">Free to use • Privacy focused • Open source</p>
+      </div>
+    </div>
+
+    <!-- Dashboard (shown when authenticated) -->
+    <div id="dashboardScreen" class="screen" style="display: none;">
+      <!-- User Info -->
+      <div class="user-info">
+        <div class="user-avatar">
+          <img id="userAvatar" src="" alt="Profile" style="display: none;">
+          <div id="userAvatarPlaceholder" class="avatar-placeholder">👤</div>
+        </div>
+        <div class="user-details">
+          <h2 id="userName">Loading...</h2>
+          <p class="user-level">Level <span id="userLevel">--</span></p>
+        </div>
+        <div class="user-actions">
+          <button id="syncBtn" class="btn btn-sync" title="Sync new activities">
+            🔄 Sync
+          </button>
+          <button id="refreshBtn" class="btn btn-refresh" title="Refresh stats">
+            ↻
+          </button>
+        </div>
+      </div>
+
+      <!-- Level Progress -->
+      <div class="level-progress">
+        <div class="progress-header">
+          <span>Level <span id="currentLevel">--</span></span>
+          <span><span id="xpProgress">--</span> / <span id="xpNeeded">--</span> XP</span>
+        </div>
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Import Status (shown while importing) -->
+      <div id="importStatus" class="import-status" style="display: none;">
+        <div class="import-header">
+          <span id="importStatusText">⏳ Importing activities...</span>
+          <span id="importProgress">--</span>
+          <button id="dismissImport" class="btn-dismiss" style="display: none;" title="Dismiss">✕</button>
+        </div>
+        <div class="progress-bar">
+          <div id="importProgressFill" class="progress-fill import animated"></div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="stats">📊 My Stats</button>
+        <button class="tab-btn" data-tab="friends">👥 Friends</button>
+      </div>
+
+      <!-- Stats Tab -->
+      <div id="statsTab" class="tab-content active">
+      <!-- Stats Dashboard -->
+      <div class="stats-grid">
+        <!-- Radar Chart -->
+        <div class="card radar-card">
+          <h3>Your Stats</h3>
+          <div class="chart-container">
+            <canvas id="statsChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="card stat-card">
+          <div class="stat-icon">💪</div>
+          <div class="stat-details">
+            <h4>Strength</h4>
+            <p class="stat-value" id="strengthValue">--</p>
+          </div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-icon">🏃</div>
+          <div class="stat-details">
+            <h4>Endurance</h4>
+            <p class="stat-value" id="enduranceValue">--</p>
+          </div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-details">
+            <h4>Agility</h4>
+            <p class="stat-value" id="agilityValue">--</p>
+          </div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-details">
+            <h4>Total XP</h4>
+            <p class="stat-value" id="totalXpValue">--</p>
+          </div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-details">
+            <h4>Activities</h4>
+            <p class="stat-value" id="activitiesValue">--</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sport Breakdown -->
+      <div class="card sport-breakdown">
+        <h3>Activity Breakdown</h3>
+        <div id="sportList" class="sport-list">
+          <p class="loading">Loading...</p>
+        </div>
+      </div>
+
+      <!-- Recent Activities -->
+      <div class="card recent-activities">
+        <h3>Recent Activities</h3>
+        <div id="activityList" class="activity-list">
+          <p class="loading">Loading...</p>
+        </div>
+      </div>
+      </div>
+      <!-- End Stats Tab -->
+
+      <!-- Friends Tab -->
+      <div id="friendsTab" class="tab-content">
+        <!-- Friend Search -->
+        <div class="card friend-search">
+          <h3>Add Friends</h3>
+          <div class="search-container">
+            <input type="text" id="friendSearchInput" placeholder="Search by username or name..." class="search-input">
+            <button id="searchBtn" class="btn btn-primary">Search</button>
+          </div>
+          <div id="searchResults" class="search-results"></div>
+        </div>
+
+        <!-- Friend Requests -->
+        <div id="friendRequestsCard" class="card friend-requests" style="display: none;">
+          <h3>Friend Requests</h3>
+          <div id="friendRequestsList" class="friend-requests-list"></div>
+        </div>
+
+        <!-- Friends List -->
+        <div class="card friends-list">
+          <h3>My Friends</h3>
+          <div id="friendsList" class="friends-grid">
+            <p class="loading">Loading...</p>
+          </div>
+        </div>
+      </div>
+      <!-- End Friends Tab -->
+
+      <!-- Friend Comparison Modal -->
+      <div id="compareModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>⚔️ Stat Comparison</h2>
+            <button class="modal-close" id="closeCompare">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="comparison-users">
+              <div class="comparison-user">
+                <img id="compareUser1Avatar" class="comparison-avatar" src="" alt="">
+                <h3 id="compareUser1Name">You</h3>
+                <p id="compareUser1Level" class="comparison-level">Level --</p>
+              </div>
+              <div class="comparison-vs">VS</div>
+              <div class="comparison-user">
+                <img id="compareUser2Avatar" class="comparison-avatar" src="" alt="">
+                <h3 id="compareUser2Name">Friend</h3>
+                <p id="compareUser2Level" class="comparison-level">Level --</p>
+              </div>
+            </div>
+
+            <div class="comparison-chart">
+              <canvas id="compareChart"></canvas>
+            </div>
+
+            <div class="comparison-stats">
+              <table class="stats-table">
+                <thead>
+                  <tr>
+                    <th>Stat</th>
+                    <th id="compareTableUser1">You</th>
+                    <th id="compareTableUser2">Friend</th>
+                  </tr>
+                </thead>
+                <tbody id="compareTableBody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>Powered by <a href="https://www.strava.com" target="_blank">Strava</a></p>
+      <p><a href="https://github.com/lethalgem/fitness-rpg" target="_blank">View on GitHub</a></p>
+    </footer>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

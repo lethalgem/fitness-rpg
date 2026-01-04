@@ -1,14 +1,31 @@
-name = "fitness-rpg-worker"
-main = "build/worker/shim.mjs"
-compatibility_date = "2023-06-28"
+name = "fitness-rpg"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
 
-[build]
-command = "cargo install -q worker-build && worker-build --release"
+# Static assets configuration
+[assets]
+directory = "public"
+binding = "ASSETS"
 
+# Cron trigger for background job processing (every 15 minutes)
+[triggers]
+crons = ["*/15 * * * *"]
+
+# D1 Database binding
 [[d1_databases]]
-name = "fitness-rpg-db"
-binding = "DATABASE"
-database_id = "18a48022-de48-4b42-85c1-88f052429d00"
+binding = "DB"
+database_name = "fitness-rpg-ts"
+database_id = "29ea15e8-d43c-447e-adc8-c2b71371c1b8"
 
+# Environment variables (non-sensitive)
 [vars]
-STRAVA_CLIENT_ID="119309"
+STRAVA_CLIENT_ID = "119309"
+FRONTEND_URL = "https://fitness-rpg.iancashdeveloper.workers.dev"
+
+# Build configuration for TypeScript
+[build]
+command = ""
+
+# Development configuration
+[env.dev]
+vars = { FRONTEND_URL = "http://localhost:8787" }

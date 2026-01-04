@@ -1,0 +1,222 @@
+// Main Cloudflare Worker entry point
+
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import type { Env } from './types';
+import auth from './routes/auth';
+import stats from './routes/stats';
+import friends from './routes/friends';
+import cronHandler from './cron';
+
+const app = new Hono<{ Bindings: Env }>();
+
+// Enable CORS
+app.use('/*', cors());
+
+// API routes
+app.route('/auth', auth);
+app.route('/stats', stats);
+app.route('/friends', friends);
+
+// Health check
+app.get('/health', (c) => {
+  return c.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Manual cron trigger (for testing)
+app.get('/cron/trigger', async (c) => {
+  // Run job in background using waitUntil so request returns immediately
+  c.executionCtx.waitUntil(
+    cronHandler.processImports(c.env).catch((error) => {
+      console.error('Background cron job failed:', error);
+    })
+  );
+  return c.json({ success: true, message: 'Cron job started in background' });
+});
+
+// Dismiss import job completion message
+app.post('/dismiss-job/:userId/:jobId', async (c) => {
+  try {
+    const userId = parseInt(c.req.param('userId'));
+    const jobId = parseInt(c.req.param('jobId'));
+
+    if (isNaN(userId) || isNaN(jobId)) {
+      return c.json({ success: false, error: 'Invalid parameters' }, 400);
+    }
+
+    const { createDbClient } = await import('./db/client');
+    const { UserRepository } = await import('./db/users');
+
+    const dbClient = createDbClient(c.env);
+    const userRepo = new UserRepository(dbClient);
+
+    await userRepo.updateLastDismissedJobId(userId, jobId);
+
+    return c.json({ success: true });
+  } catch (err) {
+    console.error('Dismiss job failed', err);
+    return c.json({ success: false, error: 'Failed to dismiss job' }, 500);
+  }
+});
+
+// Sync activities for a user
+app.post('/sync/:userId', async (c) => {
+  try {
+    const userId = parseInt(c.req.param('userId'));
+    if (isNaN(userId)) {
+      return c.json({ success: false, error: 'Invalid user ID' }, 400);
+    }
+
+    const { createDbClient } = await import('./db/client');
+    const { UserRepository } = await import('./db/users');
+    const { JobRepository } = await import('./db/jobs');
+    const { ImportJobProcessor } = await import('./jobs/importer');
+
+    const dbClient = createDbClient(c.env);
+    const userRepo = new UserRepository(dbClient);
+    const jobRepo = new JobRepository(dbClient);
+
+    // Check if user exists
+    const user = await userRepo.findById(userId);
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404);
+    }
+
+    // Check if there's already an active import job
+    const activeJob = await jobRepo.findActiveByUserId(userId);
+    if (activeJob && ['pending', 'in_progress', 'paused'].includes(activeJob.status)) {
+      return c.json({
+        success: false,
+        error: 'An import is already in progress',
+        job: activeJob
+      }, 409);
+    }
+
+    // Get the most recent activity date to only fetch newer activities
+    const { ActivityRepository } = await import('./db/activities');
+    const activityRepo = new ActivityRepository(dbClient);
+    const mostRecentActivity = await activityRepo.findMostRecent(userId);
+
+    let afterTimestamp: number | undefined;
+    if (mostRecentActivity?.start_date) {
+      // Convert ISO date to epoch seconds and add 1 second to exclude the most recent activity
+      afterTimestamp = Math.floor(new Date(mostRecentActivity.start_date).getTime() / 1000) + 1;
+    }
+
+    // Check if there are actually new activities before creating a job
+    if (afterTimestamp) {
+      // Refresh token if needed
+      const needsRefresh = await userRepo.needsTokenRefresh(user);
+      let accessToken = user.access_token;
+
+      if (needsRefresh) {
+        const { refreshStravaToken } = await import('./strava/auth');
+        const tokenInfo = await refreshStravaToken(user.refresh_token, c.env);
+        await userRepo.updateTokens(user.id, tokenInfo.accessToken, tokenInfo.refreshToken, tokenInfo.expiresAt);
+        accessToken = tokenInfo.accessToken;
+      }
+
+      // Do a quick check to see if there are any new activities
+      const { StravaClient } = await import('./strava/client');
+      const stravaClient = new StravaClient(accessToken);
+      const checkActivities = await stravaClient.getActivities(1, 1, afterTimestamp);
+
+      if (checkActivities.length === 0) {
+        // No new activities, don't create a job
+        return c.json({
+          success: true,
+          message: 'No new activities to sync',
+          job: null
+        });
+      }
+    }
+
+    // Create new import job with 'after' filter
+    const job = await jobRepo.create(userId, afterTimestamp);
+
+    // Start processing immediately in the background (don't await)
+    // The processImports function will handle all pages in a loop
+    const processingPromise = cronHandler.processImports(c.env).catch((error) => {
+      console.error('Background sync failed:', error);
+    });
+
+    // Keep the processing alive even after response is sent
+    c.executionCtx.waitUntil(processingPromise);
+
+    return c.json({
+      success: true,
+      message: 'Sync started',
+      job: {
+        id: job.id,
+        status: job.status,
+        imported: job.imported_activities
+      }
+    });
+
+  } catch (err) {
+    console.error('Sync endpoint failed', err);
+    return c.json({ success: false, error: 'Failed to start sync' }, 500);
+  }
+});
+
+// Serve static files (frontend)
+app.get('/*', async (c) => {
+  // Try to serve from assets binding
+  if (c.env.ASSETS) {
+    try {
+      const assetResponse = await c.env.ASSETS.fetch(c.req.raw);
+      if (assetResponse.status === 200) {
+        return assetResponse;
+      }
+    } catch (e) {
+      console.error('Asset fetch error:', e);
+    }
+  }
+
+  // If root path and no assets, try to serve index.html directly
+  const path = new URL(c.req.url).pathname;
+  if (path === '/' && c.env.ASSETS) {
+    try {
+      const indexRequest = new Request(c.req.url.replace(/\/$/, '/index.html'), c.req.raw);
+      const indexResponse = await c.env.ASSETS.fetch(indexRequest);
+      if (indexResponse.status === 200) {
+        return indexResponse;
+      }
+    } catch (e) {
+      console.error('Index fetch error:', e);
+    }
+  }
+
+  // Fallback message
+  return c.html(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Fitness RPG</title>
+        <style>
+          body { font-family: sans-serif; text-align: center; padding: 50px; }
+          a { color: #667eea; text-decoration: none; }
+        </style>
+      </head>
+      <body>
+        <h1>Fitness RPG</h1>
+        <p>Frontend files not found. Deploying now...</p>
+        <p><a href="/auth/strava/connect">Connect with Strava</a></p>
+      </body>
+    </html>
+  `);
+});
+
+// Export handlers for different event types
+export default {
+  // HTTP requests
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    return app.fetch(request, env, ctx);
+  },
+
+  // Cron triggers
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    return cronHandler.scheduled(event, env, ctx);
+  },
+};

@@ -1,12 +1,20 @@
 {
-	"name": "template-worker-rust",
-	"version": "0.0.0",
-	"private": true,
-	"scripts": {
-		"deploy": "wrangler deploy",
-		"dev": "wrangler dev --local"
-	},
-	"devDependencies": {
-		"wrangler": "^3.1.2"
-	}
+  "name": "fitness-rpg",
+  "version": "1.0.0",
+  "description": "A fitness RPG powered by Strava activities",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "init-db": "wrangler d1 execute fitness-rpg-db --remote --file=./schema.sql"
+  },
+  "dependencies": {
+    "hono": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240925.0",
+    "typescript": "^5.3.3",
+    "wrangler": "^4.54.0"
+  }
 }

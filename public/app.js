@@ -490,3 +490,450 @@ function getTimeAgo(date) {
     return 'Just now';
   }
 }
+
+// ===== Friends Feature =====
+
+let currentUserStats = null;
+let compareChart = null;
+
+// Tab switching
+document.addEventListener('DOMContentLoaded', () => {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      switchTab(tab);
+    });
+  });
+});
+
+function switchTab(tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+
+  // Update tab content
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.remove('active');
+  });
+
+  if (tabName === 'stats') {
+    document.getElementById('statsTab').classList.add('active');
+  } else if (tabName === 'friends') {
+    document.getElementById('friendsTab').classList.add('active');
+    loadFriendsTab();
+  }
+}
+
+async function loadFriendsTab() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) return;
+
+  await Promise.all([
+    loadFriends(userId),
+    loadFriendRequests(userId)
+  ]);
+
+  // Set up search
+  const searchBtn = document.getElementById('searchBtn');
+  const searchInput = document.getElementById('friendSearchInput');
+
+  searchBtn.onclick = () => searchUsers(searchInput.value);
+  searchInput.onkeypress = (e) => {
+    if (e.key === 'Enter') searchUsers(searchInput.value);
+  };
+}
+
+async function loadFriends(userId) {
+  const friendsList = document.getElementById('friendsList');
+
+  try {
+    const response = await fetch(`/friends/${userId}`);
+    const data = await response.json();
+
+    if (!data.success || !data.data.friends || data.data.friends.length === 0) {
+      friendsList.innerHTML = '<p class="no-data">No friends yet. Search for users to add!</p>';
+      return;
+    }
+
+    friendsList.innerHTML = data.data.friends.map(friend => {
+      const fullName = [friend.firstname, friend.lastname].filter(Boolean).join(' ') || friend.username || 'Athlete';
+
+      return `
+        <div class="friend-card" onclick="compareFriend(${friend.id})">
+          <img src="${friend.profile_url || ''}" class="friend-avatar" alt="${fullName}">
+          <div class="friend-name">${fullName}</div>
+          <div class="friend-level">Level ${friend.stats.level}</div>
+          <div class="friend-stats">
+            <div class="friend-stat">
+              <div class="friend-stat-label">💪 STR</div>
+              <div class="friend-stat-value">${friend.stats.strength_level}</div>
+            </div>
+            <div class="friend-stat">
+              <div class="friend-stat-label">🏃 END</div>
+              <div class="friend-stat-value">${friend.stats.endurance_level}</div>
+            </div>
+            <div class="friend-stat">
+              <div class="friend-stat-label">⚡ AGI</div>
+              <div class="friend-stat-value">${friend.stats.agility_level}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Failed to load friends', err);
+    friendsList.innerHTML = '<p class="no-data">Failed to load friends</p>';
+  }
+}
+
+async function loadFriendRequests(userId) {
+  try {
+    const response = await fetch(`/friends/${userId}/requests`);
+    const data = await response.json();
+
+    const requestsCard = document.getElementById('friendRequestsCard');
+    const requestsList = document.getElementById('friendRequestsList');
+
+    if (!data.success || !data.data.requests || data.data.requests.length === 0) {
+      requestsCard.style.display = 'none';
+      return;
+    }
+
+    requestsCard.style.display = 'block';
+    requestsList.innerHTML = data.data.requests.map(request => {
+      const fullName = [request.requester.firstname, request.requester.lastname].filter(Boolean).join(' ')
+        || request.requester.username || 'Athlete';
+
+      return `
+        <div class="friend-request-item">
+          <div class="friend-request-info">
+            <img src="${request.requester.profile_url || ''}" class="search-result-avatar" alt="${fullName}">
+            <div>
+              <div class="search-result-name">${fullName}</div>
+              <div class="search-result-username">@${request.requester.username || 'athlete'}</div>
+            </div>
+          </div>
+          <div class="friend-request-actions">
+            <button class="btn btn-primary" onclick="acceptFriendRequest(${request.requester.id})">Accept</button>
+            <button class="btn btn-secondary" onclick="declineFriendRequest(${request.requester.id})">Decline</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Failed to load friend requests', err);
+  }
+}
+
+async function searchUsers(query) {
+  if (!query || query.length < 2) {
+    alert('Please enter at least 2 characters');
+    return;
+  }
+
+  const searchResults = document.getElementById('searchResults');
+  searchResults.innerHTML = '<p class="loading">Searching...</p>';
+
+  try {
+    const response = await fetch(`/friends/search?q=${encodeURIComponent(query)}`);
+    const data = await response.json();
+
+    if (!data.success || !data.data.users || data.data.users.length === 0) {
+      searchResults.innerHTML = '<p class="no-data">No users found</p>';
+      return;
+    }
+
+    const currentUserId = parseInt(localStorage.getItem('userId'));
+
+    searchResults.innerHTML = data.data.users
+      .filter(user => user.id !== currentUserId)
+      .map(user => {
+        const fullName = [user.firstname, user.lastname].filter(Boolean).join(' ') || user.username || 'Athlete';
+
+        return `
+          <div class="search-result-item">
+            <div class="search-result-info">
+              <img src="${user.profile_url || ''}" class="search-result-avatar" alt="${fullName}">
+              <div>
+                <div class="search-result-name">${fullName}</div>
+                <div class="search-result-username">@${user.username || 'athlete'}</div>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="sendFriendRequest(${user.id})">Add Friend</button>
+          </div>
+        `;
+      }).join('');
+  } catch (err) {
+    console.error('Failed to search users', err);
+    searchResults.innerHTML = '<p class="no-data">Search failed</p>';
+  }
+}
+
+async function sendFriendRequest(friendId) {
+  const userId = localStorage.getItem('userId');
+
+  try {
+    const response = await fetch(`/friends/${userId}/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ friendId })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      alert('Friend request sent!');
+      document.getElementById('friendSearchInput').value = '';
+      document.getElementById('searchResults').innerHTML = '';
+    } else {
+      alert(data.error || 'Failed to send friend request');
+    }
+  } catch (err) {
+    console.error('Failed to send friend request', err);
+    alert('Failed to send friend request');
+  }
+}
+
+async function acceptFriendRequest(friendId) {
+  const userId = localStorage.getItem('userId');
+
+  try {
+    const response = await fetch(`/friends/${userId}/accept`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ friendId })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      loadFriendsTab(); // Reload both lists
+    } else {
+      alert(data.error || 'Failed to accept friend request');
+    }
+  } catch (err) {
+    console.error('Failed to accept friend request', err);
+    alert('Failed to accept friend request');
+  }
+}
+
+async function declineFriendRequest(friendId) {
+  const userId = localStorage.getItem('userId');
+
+  try {
+    const response = await fetch(`/friends/${userId}/decline`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ friendId })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      loadFriendRequests(userId); // Reload requests list
+    } else {
+      alert(data.error || 'Failed to decline friend request');
+    }
+  } catch (err) {
+    console.error('Failed to decline friend request', err);
+    alert('Failed to decline friend request');
+  }
+}
+
+async function compareFriend(friendId) {
+  const userId = localStorage.getItem('userId');
+
+  try {
+    // Fetch both user's stats and friend's stats
+    const [userResponse, friendsResponse] = await Promise.all([
+      fetch(`/stats/${userId}`),
+      fetch(`/friends/${userId}`)
+    ]);
+
+    const userData = await userResponse.json();
+    const friendsData = await friendsResponse.json();
+
+    if (!userData.success || !friendsData.success) {
+      alert('Failed to load comparison data');
+      return;
+    }
+
+    const userStats = userData.data.stats;
+    const friend = friendsData.data.friends.find(f => f.id === friendId);
+
+    if (!friend) {
+      alert('Friend not found');
+      return;
+    }
+
+    showComparisonModal(userData.data.user, userStats, friend, friend.stats);
+  } catch (err) {
+    console.error('Failed to compare friend', err);
+    alert('Failed to load comparison');
+  }
+}
+
+function showComparisonModal(user, userStats, friend, friendStats) {
+  const modal = document.getElementById('compareModal');
+
+  // Set user info
+  const userName = [user.firstname, user.lastname].filter(Boolean).join(' ') || user.username || 'You';
+  document.getElementById('compareUser1Avatar').src = user.profile_url || '';
+  document.getElementById('compareUser1Name').textContent = userName;
+  document.getElementById('compareUser1Level').textContent = `Level ${userStats.level}`;
+  document.getElementById('compareTableUser1').textContent = userName;
+
+  // Set friend info
+  const friendName = [friend.firstname, friend.lastname].filter(Boolean).join(' ') || friend.username || 'Friend';
+  document.getElementById('compareUser2Avatar').src = friend.profile_url || '';
+  document.getElementById('compareUser2Name').textContent = friendName;
+  document.getElementById('compareUser2Level').textContent = `Level ${friendStats.level}`;
+  document.getElementById('compareTableUser2').textContent = friendName;
+
+  // Create comparison chart
+  createComparisonChart(userStats, friendStats);
+
+  // Create comparison table
+  const tableBody = document.getElementById('compareTableBody');
+  const stats = [
+    { name: '⭐ Total XP', user: userStats.total_xp, friend: friendStats.total_xp },
+    { name: '💪 Strength', user: userStats.strength_level, friend: friendStats.strength_level },
+    { name: '🏃 Endurance', user: userStats.endurance_level, friend: friendStats.endurance_level },
+    { name: '⚡ Agility', user: userStats.agility_level, friend: friendStats.agility_level },
+    { name: '🎯 Activities', user: userStats.activities_count, friend: friendStats.activities_count },
+  ];
+
+  tableBody.innerHTML = stats.map(stat => {
+    const userHigher = stat.user > stat.friend;
+    const friendHigher = stat.friend > stat.user;
+
+    return `
+      <tr>
+        <td>${stat.name}</td>
+        <td class="${userHigher ? 'stat-higher' : friendHigher ? 'stat-lower' : ''}">${stat.user.toLocaleString()}</td>
+        <td class="${friendHigher ? 'stat-higher' : userHigher ? 'stat-lower' : ''}">${stat.friend.toLocaleString()}</td>
+      </tr>
+    `;
+  }).join('');
+
+  // Show modal
+  modal.style.display = 'flex';
+
+  // Set up close handler
+  document.getElementById('closeCompare').onclick = () => {
+    modal.style.display = 'none';
+    if (compareChart) {
+      compareChart.destroy();
+      compareChart = null;
+    }
+  };
+
+  // Close on background click
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+      if (compareChart) {
+        compareChart.destroy();
+        compareChart = null;
+      }
+    }
+  };
+}
+
+function createComparisonChart(userStats, friendStats) {
+  const canvas = document.getElementById('compareChart');
+  const ctx = canvas.getContext('2d');
+
+  // Destroy existing chart
+  if (compareChart) {
+    compareChart.destroy();
+  }
+
+  const maxLevel = Math.max(
+    userStats.strength_level, userStats.endurance_level, userStats.agility_level,
+    friendStats.strength_level, friendStats.endurance_level, friendStats.agility_level,
+    10
+  );
+
+  compareChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['Strength', 'Endurance', 'Agility'],
+      datasets: [
+        {
+          label: 'You',
+          data: [userStats.strength_level, userStats.endurance_level, userStats.agility_level],
+          fill: true,
+          backgroundColor: 'rgba(102, 126, 234, 0.2)',
+          borderColor: 'rgb(102, 126, 234)',
+          pointBackgroundColor: 'rgb(102, 126, 234)',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: 'rgb(102, 126, 234)',
+          borderWidth: 3,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+        },
+        {
+          label: 'Friend',
+          data: [friendStats.strength_level, friendStats.endurance_level, friendStats.agility_level],
+          fill: true,
+          backgroundColor: 'rgba(239, 68, 68, 0.2)',
+          borderColor: 'rgb(239, 68, 68)',
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: 'rgb(239, 68, 68)',
+          borderWidth: 3,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        r: {
+          beginAtZero: true,
+          suggestedMin: 0,
+          suggestedMax: Math.ceil(maxLevel * 1.2),
+          ticks: {
+            stepSize: Math.max(1, Math.ceil(maxLevel / 5)),
+            backdropColor: 'rgba(255, 255, 255, 0.75)',
+            color: '#666',
+            font: {
+              size: 12
+            }
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.1)',
+          },
+          pointLabels: {
+            font: {
+              size: 14,
+              weight: 'bold'
+            },
+            color: '#333',
+            padding: 15,
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.dataset.label + ': Level ' + context.parsed.r;
+            }
+          }
+        }
+      },
+    },
+  });
+}

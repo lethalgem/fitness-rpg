@@ -7,14 +7,20 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "cf-typegen": "wrangler types",
-    "init-db": "wrangler d1 execute fitness-rpg-db --remote --file=./schema.sql"
+    "init-db": "wrangler d1 execute fitness-rpg-db --remote --file=./schema.sql",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "hono": "^4.0.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240925.0",
+    "@vitest/ui": "^3.2.4",
     "typescript": "^5.3.3",
+    "vitest": "^3.2.4",
     "wrangler": "^4.54.0"
   }
 }

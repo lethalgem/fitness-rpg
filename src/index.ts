@@ -5,6 +5,7 @@ import { cors } from 'hono/cors';
 import type { Env } from './types';
 import auth from './routes/auth';
 import stats from './routes/stats';
+import friends from './routes/friends';
 import cronHandler from './cron';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -15,6 +16,7 @@ app.use('/*', cors());
 // API routes
 app.route('/auth', auth);
 app.route('/stats', stats);
+app.route('/friends', friends);
 
 // Health check
 app.get('/health', (c) => {

@@ -81,6 +81,16 @@ export interface RateLimit {
   created_at: number;
 }
 
+export interface Friendship {
+  id: number;
+  user_id: number;
+  friend_id: number;
+  status: 'pending' | 'accepted' | 'declined' | 'blocked';
+  requester_id: number;
+  created_at: number;
+  updated_at: number;
+}
+
 // Strava API types (minimal - only fields we need)
 export interface StravaTokenResponse {
   token_type: string;

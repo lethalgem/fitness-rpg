@@ -1,12 +1,13 @@
 # Adding New Stats to Fitness RPG
 
-This guide explains how to add new stat types (like agility, speed, flexibility, etc.) to your Fitness RPG.
+This guide explains how to add new stat types (like speed, flexibility, power, etc.) to your Fitness RPG.
 
-## Current Stats
+## Current Stats (Implemented ✅)
 - **Strength**: Weight training, climbing, strength-based activities
 - **Endurance**: Running, cycling, long-duration cardio
+- **Agility**: Quick movements, directional changes, coordination (tennis, soccer, etc.)
 
-## How to Add a New Stat (e.g., "Agility")
+## How to Add a Fourth Stat (e.g., "Speed")
 
 ### 1. Update Types (`src/types.ts`)
 
@@ -198,12 +199,28 @@ Example mappings:
 'Skateboard': { strength: 0.3, endurance: 0.2, agility: 0.5 },
 ```
 
+## Testing Your Changes
+
+After adding a new stat, **run the test suite**:
+
+```bash
+npm test
+```
+
+The tests will automatically catch if:
+- ❌ Sport percentages don't sum to 1.0
+- ❌ Any percentage is outside 0-1 range
+- ❌ Stat calculations are broken
+
+If all tests pass, your changes are safe to deploy!
+
 ## Tips
 
-1. **Balance is key**: All stat values for each sport must sum to 1.0
-2. **Test thoroughly**: After adding a stat, test with various activities to ensure calculations are correct
+1. **Balance is key**: All stat values for each sport must sum to 1.0 (tests will catch errors!)
+2. **Test thoroughly**: Run `npm test` after making changes
 3. **Consider the narrative**: Think about what each stat represents in your RPG and how activities logically contribute to it
 4. **UI space**: The radar chart works best with 3-5 stats. More than that might need a different visualization
+5. **Update all files**: Types → Config → Calculator → Frontend (follow this guide step-by-step)
 
 ## Future Enhancements
 

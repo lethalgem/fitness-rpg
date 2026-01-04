@@ -79,6 +79,14 @@
         </div>
       </div>
 
+      <!-- Tab Navigation -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="stats">📊 My Stats</button>
+        <button class="tab-btn" data-tab="friends">👥 Friends</button>
+      </div>
+
+      <!-- Stats Tab -->
+      <div id="statsTab" class="tab-content active">
       <!-- Stats Dashboard -->
       <div class="stats-grid">
         <!-- Radar Chart -->
@@ -146,6 +154,80 @@
           <p class="loading">Loading...</p>
         </div>
       </div>
+      </div>
+      <!-- End Stats Tab -->
+
+      <!-- Friends Tab -->
+      <div id="friendsTab" class="tab-content">
+        <!-- Friend Search -->
+        <div class="card friend-search">
+          <h3>Add Friends</h3>
+          <div class="search-container">
+            <input type="text" id="friendSearchInput" placeholder="Search by username or name..." class="search-input">
+            <button id="searchBtn" class="btn btn-primary">Search</button>
+          </div>
+          <div id="searchResults" class="search-results"></div>
+        </div>
+
+        <!-- Friend Requests -->
+        <div id="friendRequestsCard" class="card friend-requests" style="display: none;">
+          <h3>Friend Requests</h3>
+          <div id="friendRequestsList" class="friend-requests-list"></div>
+        </div>
+
+        <!-- Friends List -->
+        <div class="card friends-list">
+          <h3>My Friends</h3>
+          <div id="friendsList" class="friends-grid">
+            <p class="loading">Loading...</p>
+          </div>
+        </div>
+      </div>
+      <!-- End Friends Tab -->
+
+      <!-- Friend Comparison Modal -->
+      <div id="compareModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>⚔️ Stat Comparison</h2>
+            <button class="modal-close" id="closeCompare">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="comparison-users">
+              <div class="comparison-user">
+                <img id="compareUser1Avatar" class="comparison-avatar" src="" alt="">
+                <h3 id="compareUser1Name">You</h3>
+                <p id="compareUser1Level" class="comparison-level">Level --</p>
+              </div>
+              <div class="comparison-vs">VS</div>
+              <div class="comparison-user">
+                <img id="compareUser2Avatar" class="comparison-avatar" src="" alt="">
+                <h3 id="compareUser2Name">Friend</h3>
+                <p id="compareUser2Level" class="comparison-level">Level --</p>
+              </div>
+            </div>
+
+            <div class="comparison-chart">
+              <canvas id="compareChart"></canvas>
+            </div>
+
+            <div class="comparison-stats">
+              <table class="stats-table">
+                <thead>
+                  <tr>
+                    <th>Stat</th>
+                    <th id="compareTableUser1">You</th>
+                    <th id="compareTableUser2">Friend</th>
+                  </tr>
+                </thead>
+                <tbody id="compareTableBody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Footer -->

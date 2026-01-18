@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Metrics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-glass: rgba(20, 20, 20, 0.6);
+            --accent-green: #00ff94;
+            --accent-orange: #ff6b35;
+            --accent-blue: #00d9ff;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-tertiary: #6b7280;
+            --border: rgba(255, 255, 255, 0.08);
+            --glow-green: rgba(0, 255, 148, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Archivo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated gradient background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 255, 148, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(0, 217, 255, 0.02) 0%, transparent 50%);
+            animation: gradientShift 20s ease infinite;
+            z-index: 0;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-10%, -10%); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4rem;
+            padding: 2rem;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            opacity: 0;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .header-left h1 {
+            font-weight: 900;
+            font-size: 2.5rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-left .subtitle {
+            font-size: 0.875rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .overall-level {
+            font-weight: 900;
+            font-size: 3.5rem;
+            line-height: 1;
+            color: var(--accent-green);
+            text-shadow: 0 0 30px var(--glow-green);
+        }
+
+        .level-label {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.25rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-module {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: slideUp 0.6s ease forwards;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .stat-module:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .stat-module:nth-child(1) { animation-delay: 0.1s; }
+        .stat-module:nth-child(2) { animation-delay: 0.2s; }
+        .stat-module:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Gradient accent bars */
+        .stat-module::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+        }
+
+        .stat-module:nth-child(1) { color: var(--accent-orange); }
+        .stat-module:nth-child(2) { color: var(--accent-blue); }
+        .stat-module:nth-child(3) { color: var(--accent-green); }
+
+        .stat-header {
+            padding: 2rem 2rem 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-title {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
+        }
+
+        .stat-level {
+            font-weight: 900;
+            font-size: 2.5rem;
+            line-height: 1;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-module:nth-child(1) .stat-level { 
+            color: var(--accent-orange);
+            text-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+        }
+        .stat-module:nth-child(2) .stat-level { 
+            color: var(--accent-blue);
+            text-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+        }
+        .stat-module:nth-child(3) .stat-level { 
+            color: var(--accent-green);
+            text-shadow: 0 0 20px var(--glow-green);
+        }
+
+        .stat-body {
+            padding: 2rem;
+        }
+
+        .stat-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            transition: background 0.3s ease;
+        }
+
+        .metric:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1;
+            color: var(--text-primary);
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            margin-bottom: 2rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .progress-track {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .stat-module:nth-child(1) .progress-fill { 
+            background: linear-gradient(90deg, var(--accent-orange), #ff8c5a);
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+        }
+        .stat-module:nth-child(2) .progress-fill { 
+            background: linear-gradient(90deg, var(--accent-blue), #5af3ff);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
+        }
+        .stat-module:nth-child(3) .progress-fill { 
+            background: linear-gradient(90deg, var(--accent-green), #5affb4);
+            box-shadow: 0 0 20px var(--glow-green);
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Activity Chart */
+        .chart-container {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            height: 140px;
+        }
+
+        .chart-title {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 80px;
+            gap: 4px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .chart-bar:hover {
+            background: currentColor;
+            opacity: 0.8;
+        }
+
+        /* Sync Button */
+        .sync-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 3rem;
+            opacity: 0;
+            animation: fadeIn 0.6s ease 0.6s forwards;
+        }
+
+        .sync-button {
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: -0.01em;
+            padding: 1.25rem 3rem;
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 100px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 255, 148, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sync-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .sync-button:hover::before {
+            transform: translateX(100%);
+        }
+
+        .sync-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 255, 148, 0.4);
+        }
+
+        .sync-button:active {
+            transform: translateY(0);
+        }
+
+        /* Footer Stats */
+        .footer-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            padding: 2rem;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            opacity: 0;
+            animation: fadeIn 0.6s ease 0.7s forwards;
+        }
+
+        .footer-stat {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            transition: background 0.3s ease;
+        }
+
+        .footer-stat:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .footer-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .footer-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1.5rem;
+            }
+
+            .header-right {
+                text-align: center;
+            }
+
+            .container {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1>IAN CASH</h1>
+                <div class="subtitle">Performance Dashboard</div>
+            </div>
+            <div class="header-right">
+                <div class="overall-level" id="overallLevel">25</div>
+                <div class="level-label">Overall Level</div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <!-- Strength -->
+            <div class="stat-module">
+                <div class="stat-header">
+                    <div class="stat-title">Strength</div>
+                    <div class="stat-level">LV<span id="strengthLevel">14</span></div>
+                </div>
+                <div class="stat-body">
+                    <div class="stat-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Current XP</div>
+                            <div class="metric-value" id="strengthXP">203,861</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Next Level</div>
+                            <div class="metric-value" id="strengthNext">225,000</div>
+                        </div>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span id="strengthPercent">90%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="strengthProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">7-Day Activity</div>
+                        <div class="chart-bars">
+                            <div class="chart-bar" style="height: 60%;"></div>
+                            <div class="chart-bar" style="height: 75%;"></div>
+                            <div class="chart-bar" style="height: 45%;"></div>
+                            <div class="chart-bar" style="height: 85%;"></div>
+                            <div class="chart-bar" style="height: 55%;"></div>
+                            <div class="chart-bar" style="height: 70%;"></div>
+                            <div class="chart-bar" style="height: 90%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Endurance -->
+            <div class="stat-module">
+                <div class="stat-header">
+                    <div class="stat-title">Endurance</div>
+                    <div class="stat-level">LV<span id="enduranceLevel">19</span></div>
+                </div>
+                <div class="stat-body">
+                    <div class="stat-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Current XP</div>
+                            <div class="metric-value" id="enduranceXP">373,025</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Next Level</div>
+                            <div class="metric-value" id="enduranceNext">400,000</div>
+                        </div>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span id="endurancePercent">93%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="enduranceProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">7-Day Activity</div>
+                        <div class="chart-bars">
+                            <div class="chart-bar" style="height: 70%;"></div>
+                            <div class="chart-bar" style="height: 85%;"></div>
+                            <div class="chart-bar" style="height: 65%;"></div>
+                            <div class="chart-bar" style="height: 95%;"></div>
+                            <div class="chart-bar" style="height: 75%;"></div>
+                            <div class="chart-bar" style="height: 80%;"></div>
+                            <div class="chart-bar" style="height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agility -->
+            <div class="stat-module">
+                <div class="stat-header">
+                    <div class="stat-title">Agility</div>
+                    <div class="stat-level">LV<span id="agilityLevel">9</span></div>
+                </div>
+                <div class="stat-body">
+                    <div class="stat-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Current XP</div>
+                            <div class="metric-value" id="agilityXP">90,750</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Next Level</div>
+                            <div class="metric-value" id="agilityNext">100,000</div>
+                        </div>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span id="agilityPercent">90%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="agilityProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">7-Day Activity</div>
+                        <div class="chart-bars">
+                            <div class="chart-bar" style="height: 50%;"></div>
+                            <div class="chart-bar" style="height: 65%;"></div>
+                            <div class="chart-bar" style="height: 40%;"></div>
+                            <div class="chart-bar" style="height: 75%;"></div>
+                            <div class="chart-bar" style="height: 55%;"></div>
+                            <div class="chart-bar" style="height: 60%;"></div>
+                            <div class="chart-bar" style="height: 80%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Stats -->
+        <div class="footer-stats">
+            <div class="footer-stat">
+                <div class="footer-stat-value">892</div>
+                <div class="footer-stat-label">Total Activities</div>
+            </div>
+            <div class="footer-stat">
+                <div class="footer-stat-value">667,635</div>
+                <div class="footer-stat-label">Total XP</div>
+            </div>
+            <div class="footer-stat">
+                <div class="footer-stat-value">7</div>
+                <div class="footer-stat-label">Day Streak</div>
+            </div>
+        </div>
+
+        <!-- Sync Button -->
+        <div class="sync-section">
+            <button class="sync-button" id="syncButton">▶ SYNC DATA</button>
+        </div>
+    </div>
+
+    <script>
+        const mockData = {
+            user: { name: "Ian Cash", level: 25 },
+            stats: {
+                strength: { level: 14, xp: 203861, nextLevelXP: 225000 },
+                endurance: { level: 19, xp: 373025, nextLevelXP: 400000 },
+                agility: { level: 9, xp: 90750, nextLevelXP: 100000 }
+            }
+        };
+
+        function calculateProgress(currentXP, nextLevelXP) {
+            const levelXP = Math.floor(nextLevelXP / 10);
+            const currentLevelProgress = currentXP % levelXP;
+            return Math.min((currentLevelProgress / levelXP) * 100, 100);
+        }
+
+        function loadStats() {
+            const strengthProgress = calculateProgress(mockData.stats.strength.xp, mockData.stats.strength.nextLevelXP);
+            document.getElementById('strengthPercent').textContent = Math.floor(strengthProgress) + '%';
+            setTimeout(() => {
+                document.getElementById('strengthProgress').style.width = strengthProgress + '%';
+            }, 300);
+
+            const enduranceProgress = calculateProgress(mockData.stats.endurance.xp, mockData.stats.endurance.nextLevelXP);
+            document.getElementById('endurancePercent').textContent = Math.floor(enduranceProgress) + '%';
+            setTimeout(() => {
+                document.getElementById('enduranceProgress').style.width = enduranceProgress + '%';
+            }, 500);
+
+            const agilityProgress = calculateProgress(mockData.stats.agility.xp, mockData.stats.agility.nextLevelXP);
+            document.getElementById('agilityPercent').textContent = Math.floor(agilityProgress) + '%';
+            setTimeout(() => {
+                document.getElementById('agilityProgress').style.width = agilityProgress + '%';
+            }, 700);
+        }
+
+        document.getElementById('syncButton').addEventListener('click', () => {
+            alert('Sync functionality will be connected to your API!');
+        });
+
+        loadStats();
+    </script>
+</body>
+</html>

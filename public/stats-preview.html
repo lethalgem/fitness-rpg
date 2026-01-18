@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness RPG - Character Stats</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sky-blue: #87CEEB;
+      --cloud-white: #FFFFFF;
+      --ui-blue: rgba(100, 180, 255, 0.85);
+      --ui-border: rgba(255, 255, 255, 0.6);
+      --swim-color: #00C3FF;
+      --power-color: #FF6B00;
+      --agility-color: #FFD700;
+      --stamina-color: #00FF88;
+      --shadow: rgba(0, 0, 0, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fredoka', 'Comic Neue', cursive;
+      background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 50%, #98D8C8 100%);
+      min-height: 100vh;
+      padding: 2rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Floating clouds animation */
+    .clouds {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 100px;
+      animation: float 30s infinite ease-in-out;
+    }
+
+    .cloud:nth-child(1) {
+      width: 120px;
+      height: 50px;
+      top: 10%;
+      left: -120px;
+      animation-delay: 0s;
+    }
+
+    .cloud:nth-child(2) {
+      width: 180px;
+      height: 70px;
+      top: 30%;
+      left: -180px;
+      animation-delay: 10s;
+    }
+
+    .cloud:nth-child(3) {
+      width: 140px;
+      height: 60px;
+      top: 60%;
+      left: -140px;
+      animation-delay: 20s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateX(0) translateY(0);
+      }
+      50% {
+        transform: translateX(calc(100vw + 200px)) translateY(-20px);
+      }
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .header {
+      background: var(--ui-blue);
+      border: 4px solid var(--ui-border);
+      border-radius: 40px;
+      padding: 2rem 3rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 30px var(--shadow);
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .character-name {
+      font-size: 3rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
+      margin-bottom: 0.5rem;
+      letter-spacing: 2px;
+    }
+
+    .character-level {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #FFD700;
+      text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--ui-blue);
+      border: 4px solid var(--ui-border);
+      border-radius: 35px;
+      padding: 2rem;
+      box-shadow: 0 8px 30px var(--shadow);
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px) scale(1.02);
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-name {
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-level {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #FFD700;
+      text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+    }
+
+    .xp-info {
+      font-size: 1.2rem;
+      color: white;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
+    }
+
+    .progress-container {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      height: 40px;
+      overflow: hidden;
+      position: relative;
+      border: 3px solid rgba(255, 255, 255, 0.5);
+      box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 17px;
+      transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+
+    .progress-fill.swim {
+      background: linear-gradient(90deg, var(--swim-color), #66D9FF);
+      box-shadow: 0 0 15px var(--swim-color);
+    }
+
+    .progress-fill.power {
+      background: linear-gradient(90deg, var(--power-color), #FF8533);
+      box-shadow: 0 0 15px var(--power-color);
+    }
+
+    .progress-fill.agility {
+      background: linear-gradient(90deg, var(--agility-color), #FFE066);
+      box-shadow: 0 0 15px var(--agility-color);
+    }
+
+    .progress-fill.stamina {
+      background: linear-gradient(90deg, var(--stamina-color), #33FFAA);
+      box-shadow: 0 0 15px var(--stamina-color);
+    }
+
+    .xp-needed {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 0.5rem;
+      font-weight: 600;
+      text-align: center;
+      text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
+    }
+
+    .xp-needed strong {
+      color: white;
+      font-weight: 700;
+    }
+
+    .activities-section {
+      background: var(--ui-blue);
+      border: 4px solid var(--ui-border);
+      border-radius: 35px;
+      padding: 2rem;
+      box-shadow: 0 8px 30px var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .activities-header {
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+      margin-bottom: 1.5rem;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .activity-item {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1rem;
+      border: 3px solid rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .activity-item:hover {
+      background: rgba(255, 255, 255, 0.45);
+      transform: translateX(10px);
+    }
+
+    .activity-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
+      margin-bottom: 0.5rem;
+    }
+
+    .activity-details {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.95);
+      font-weight: 600;
+    }
+
+    .stat-badge {
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      border-radius: 15px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-left: 0.5rem;
+      text-transform: uppercase;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-badge.swim {
+      background: var(--swim-color);
+      color: white;
+    }
+
+    .stat-badge.power {
+      background: var(--power-color);
+      color: white;
+    }
+
+    .stat-badge.agility {
+      background: var(--agility-color);
+      color: #333;
+    }
+
+    .stat-badge.stamina {
+      background: var(--stamina-color);
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .character-name {
+        font-size: 2rem;
+      }
+
+      .character-level {
+        font-size: 1.3rem;
+      }
+
+      .stat-name, .stat-level {
+        font-size: 1.5rem;
+      }
+
+      .header {
+        padding: 1.5rem 2rem;
+      }
+    }
+
+    /* Bounce animation for stats on load */
+    @keyframes bounceIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      70% {
+        transform: scale(0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .stat-card {
+      animation: bounceIn 0.6s ease-out;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+  </style>
+</head>
+<body>
+  <div class="clouds">
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <div class="character-name" id="characterName">Loading...</div>
+      <div class="character-level" id="characterLevel">Level --</div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+      <!-- Stats will be populated by JavaScript -->
+    </div>
+
+    <div class="activities-section">
+      <div class="activities-header">🏆 Recent Activities</div>
+      <div id="activitiesList">
+        <!-- Activities will be populated by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mock data - replace with real API calls
+    const mockData = {
+      user: {
+        name: "Ian Cash",
+        level: 25
+      },
+      stats: {
+        swim: {
+          level: 12,
+          xp: 156000,
+          nextLevelXP: 169000
+        },
+        power: {
+          level: 18,
+          xp: 341000,
+          nextLevelXP: 361000
+        },
+        agility: {
+          level: 15,
+          xp: 235000,
+          nextLevelXP: 256000
+        },
+        stamina: {
+          level: 20,
+          xp: 412000,
+          nextLevelXP: 441000
+        }
+      },
+      recentActivities: [
+        { name: "Morning Run", distance: "5.2 km", time: "28:34", stat: "agility", xp: 1200 },
+        { name: "Pool Swim", distance: "1.5 km", time: "45:12", stat: "swim", xp: 2800 },
+        { name: "Weight Training", weight: "Total: 4500 kg", time: "52:00", stat: "power", xp: 3200 },
+        { name: "Cycling", distance: "25 km", time: "1:12:45", stat: "stamina", xp: 2400 }
+      ]
+    };
+
+    function calculateProgress(current, next) {
+      const progress = ((current % (next - current + current)) / next) * 100;
+      return Math.min(progress, 100);
+    }
+
+    function renderStats() {
+      const statsGrid = document.getElementById('statsGrid');
+      const stats = mockData.stats;
+
+      const statIcons = {
+        swim: '🏊',
+        power: '💪',
+        agility: '⚡',
+        stamina: '❤️'
+      };
+
+      statsGrid.innerHTML = Object.entries(stats).map(([statName, statData]) => {
+        const progress = calculateProgress(statData.xp, statData.nextLevelXP);
+
+        return `
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-name">${statIcons[statName]} ${statName}</div>
+              <div class="stat-level">Lv ${statData.level}</div>
+            </div>
+            <div class="xp-info">
+              ${statData.xp.toLocaleString()} / ${statData.nextLevelXP.toLocaleString()} XP
+            </div>
+            <div class="progress-container">
+              <div class="progress-fill ${statName}" style="width: ${progress}%"></div>
+              <div class="progress-percentage">${Math.round(progress)}%</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderActivities() {
+      const activitiesList = document.getElementById('activitiesList');
+
+      activitiesList.innerHTML = mockData.recentActivities.map(activity => `
+        <div class="activity-item">
+          <div class="activity-name">
+            ${activity.name}
+            <span class="stat-badge ${activity.stat}">+${activity.xp} XP</span>
+          </div>
+          <div class="activity-details">
+            ${activity.distance || activity.weight} • ${activity.time}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function init() {
+      document.getElementById('characterName').textContent = mockData.user.name;
+      document.getElementById('characterLevel').textContent = `Level ${mockData.user.level}`;
+
+      renderStats();
+      renderActivities();
+    }
+
+    // Initialize when page loads
+    init();
+  </script>
+</body>
+</html>

@@ -4,7 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fitness RPG - Level Up IRL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/chao-stats.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -36,36 +40,6 @@
 
     <!-- Dashboard (shown when authenticated) -->
     <div id="dashboardScreen" class="screen" style="display: none;">
-      <!-- User Info -->
-      <div class="user-info">
-        <div class="user-avatar">
-          <img id="userAvatar" src="" alt="Profile" style="display: none;">
-          <div id="userAvatarPlaceholder" class="avatar-placeholder">👤</div>
-        </div>
-        <div class="user-details">
-          <h2 id="userName">Loading...</h2>
-          <p class="user-level">Level <span id="userLevel">--</span></p>
-        </div>
-        <div class="user-actions">
-          <button id="syncBtn" class="btn btn-sync" title="Sync new activities">
-            🔄 Sync
-          </button>
-          <button id="refreshBtn" class="btn btn-refresh" title="Refresh stats">
-            ↻
-          </button>
-        </div>
-      </div>
-
-      <!-- Level Progress -->
-      <div class="level-progress">
-        <div class="progress-header">
-          <span>Level <span id="currentLevel">--</span></span>
-          <span><span id="xpProgress">--</span> / <span id="xpNeeded">--</span> XP</span>
-        </div>
-        <div class="progress-bar">
-          <div id="progressFill" class="progress-fill" style="width: 0%"></div>
-        </div>
-      </div>
 
       <!-- Import Status (shown while importing) -->
       <div id="importStatus" class="import-status" style="display: none;">
@@ -88,71 +62,33 @@
 
       <!-- Stats Tab -->
       <div id="statsTab" class="tab-content active">
-      <!-- Stats Dashboard -->
-      <div class="stats-grid">
-        <!-- Radar Chart -->
-        <div class="card radar-card">
-          <h3>Your Stats</h3>
-          <div class="chart-container">
-            <canvas id="statsChart"></canvas>
+      <!-- Chao Garden Stats Dashboard -->
+      <div class="chao-stats-container" id="chaoStatsContainer">
+        <!-- Header -->
+        <div class="chao-header">
+          <div class="chao-character-name" id="chaoCharacterName">Loading...</div>
+          <div class="chao-character-level" id="chaoCharacterLevel">Level --</div>
+          <div class="chao-overall-progress">
+            <div class="chao-overall-progress-bar">
+              <div class="chao-overall-progress-fill" id="chaoOverallProgressFill" style="width: 0%"></div>
+            </div>
+            <div class="chao-overall-progress-text" id="chaoOverallProgressText">0 / 0 XP</div>
           </div>
         </div>
 
-        <!-- Stat Cards -->
-        <div class="card stat-card">
-          <div class="stat-icon">💪</div>
-          <div class="stat-details">
-            <h4>Strength</h4>
-            <p class="stat-value" id="strengthValue">--</p>
+        <!-- Stats Container -->
+        <div class="chao-stats-box">
+          <div class="chao-stats-grid" id="chaoStatsGrid">
+            <div class="chao-loading">Loading stats...</div>
           </div>
         </div>
 
-        <div class="card stat-card">
-          <div class="stat-icon">🏃</div>
-          <div class="stat-details">
-            <h4>Endurance</h4>
-            <p class="stat-value" id="enduranceValue">--</p>
+        <!-- Activities Section -->
+        <div class="chao-activities-section">
+          <div class="chao-activities-header">Recent Activities</div>
+          <div id="chaoActivitiesList">
+            <div class="chao-loading">Loading activities...</div>
           </div>
-        </div>
-
-        <div class="card stat-card">
-          <div class="stat-icon">⚡</div>
-          <div class="stat-details">
-            <h4>Agility</h4>
-            <p class="stat-value" id="agilityValue">--</p>
-          </div>
-        </div>
-
-        <div class="card stat-card">
-          <div class="stat-icon">⭐</div>
-          <div class="stat-details">
-            <h4>Total XP</h4>
-            <p class="stat-value" id="totalXpValue">--</p>
-          </div>
-        </div>
-
-        <div class="card stat-card">
-          <div class="stat-icon">🎯</div>
-          <div class="stat-details">
-            <h4>Activities</h4>
-            <p class="stat-value" id="activitiesValue">--</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sport Breakdown -->
-      <div class="card sport-breakdown">
-        <h3>Activity Breakdown</h3>
-        <div id="sportList" class="sport-list">
-          <p class="loading">Loading...</p>
-        </div>
-      </div>
-
-      <!-- Recent Activities -->
-      <div class="card recent-activities">
-        <h3>Recent Activities</h3>
-        <div id="activityList" class="activity-list">
-          <p class="loading">Loading...</p>
         </div>
       </div>
       </div>
@@ -286,6 +222,7 @@
     </footer>
   </div>
 
+  <script src="/chao-stats.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

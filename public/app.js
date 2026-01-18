@@ -70,26 +70,13 @@ async function loadDashboard(userId) {
 
     const { user, stats, level_progress, sport_breakdown, import_status } = data.data;
 
-    // Update user info
-    updateUserInfo(user);
-
-    // Update level progress
-    updateLevelProgress(level_progress);
-
     // Update import status
     updateImportStatus(import_status);
 
-    // Update stats
-    updateStats(stats);
-
-    // Update radar chart
-    updateRadarChart(stats);
-
-    // Update sport breakdown
-    updateSportBreakdown(sport_breakdown);
-
-    // Load recent activities
-    loadRecentActivities(userId);
+    // Render Chao Garden stats dashboard (handles user info and level progress)
+    if (typeof window.renderChaoStats === 'function') {
+      window.renderChaoStats(userId);
+    }
 
     // If import is in progress, poll for updates
     if (import_status && (import_status.status === 'pending' || import_status.status === 'in_progress')) {
@@ -151,6 +138,10 @@ function updateUserInfo(user) {
             syncBtn.textContent = '✓ Up to date';
             setTimeout(() => {
               syncBtn.textContent = '🔄 Sync';
+              // Refresh Chao stats anyway in case there were updates
+              if (typeof window.renderChaoStats === 'function') {
+                window.renderChaoStats(userId);
+              }
             }, 2000);
           } else {
             // Sync started, wait a moment for initial activities to import
@@ -524,6 +515,11 @@ function switchTab(tabName) {
 
   if (tabName === 'stats') {
     document.getElementById('statsTab').classList.add('active');
+    // Refresh Chao stats when switching to stats tab
+    const userId = localStorage.getItem('userId');
+    if (userId && typeof window.renderChaoStats === 'function') {
+      window.renderChaoStats(userId);
+    }
   } else if (tabName === 'friends') {
     document.getElementById('friendsTab').classList.add('active');
     loadFriendsTab();

@@ -1,0 +1,590 @@
+<!-- Chao Garden Stats Dashboard Component -->
+<!-- This replaces the stats tab content with the new design -->
+
+<style>
+  /* Chao Garden Aesthetic - Sonic Adventure 2 Inspired */
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Comic+Neue:wght@400;700&display=swap');
+
+  .chao-stats-container {
+    font-family: 'Fredoka', 'Comic Neue', sans-serif;
+  }
+
+  .chao-header {
+    background: linear-gradient(135deg, rgba(100, 180, 255, 0.9), rgba(80, 160, 240, 0.9));
+    border: 4px solid rgba(255, 255, 255, 0.6);
+    border-radius: 35px;
+    padding: 2rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .chao-character-name {
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
+    margin: 0;
+    letter-spacing: 1px;
+  }
+
+  .chao-character-level {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #FFD700;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+    margin-top: 0.5rem;
+  }
+
+  .chao-stats-box {
+    background: rgba(100, 180, 255, 0.85);
+    border: 4px solid rgba(255, 255, 255, 0.6);
+    border-radius: 35px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    margin-bottom: 2rem;
+  }
+
+  .chao-stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .chao-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0;
+    animation: bounceIn 0.6s ease-out;
+  }
+
+  .chao-stat-card:nth-child(1) { animation-delay: 0.1s; }
+  .chao-stat-card:nth-child(2) { animation-delay: 0.2s; }
+  .chao-stat-card:nth-child(3) { animation-delay: 0.3s; }
+  .chao-stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+  @keyframes bounceIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .chao-stat-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 180px;
+    flex-shrink: 0;
+  }
+
+  .chao-stat-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-weight: 900;
+    font-size: 1.1rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+  }
+
+  .chao-stat-icon.strength {
+    background: linear-gradient(135deg, #FF6B00, #CC4400);
+    color: white;
+  }
+
+  .chao-stat-icon.endurance {
+    background: linear-gradient(135deg, #00FF88, #00CC66);
+    color: white;
+  }
+
+  .chao-stat-icon.agility {
+    background: linear-gradient(135deg, #FFD700, #CC9900);
+    color: #333;
+  }
+
+  .chao-stat-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .chao-stat-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .chao-stat-level-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .chao-stat-level {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #FFD700;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+    min-width: 60px;
+    text-align: right;
+  }
+
+  .chao-progress-container {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .chao-progress-segment {
+    flex: 1;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .chao-progress-segment.filled {
+    border-color: rgba(255, 255, 255, 0.8);
+    transform: scale(1.05);
+  }
+
+  .chao-progress-segment.partial {
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  .chao-progress-segment-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: left;
+  }
+
+  .chao-progress-segment-fill.strength {
+    background: linear-gradient(135deg, #FF6B00, #FF8533);
+  }
+
+  .chao-progress-segment-fill.endurance {
+    background: linear-gradient(135deg, #00FF88, #33FFAA);
+  }
+
+  .chao-progress-segment-fill.agility {
+    background: linear-gradient(135deg, #FFD700, #FFE066);
+  }
+
+  .chao-progress-segment.filled .chao-progress-segment-fill {
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
+
+  .chao-xp-info {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 600;
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
+  }
+
+  .chao-activities-section {
+    background: rgba(100, 180, 255, 0.85);
+    border: 4px solid rgba(255, 255, 255, 0.6);
+    border-radius: 35px;
+    padding: 2rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+  }
+
+  .chao-activities-header {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .chao-activities-header::before,
+  .chao-activities-header::after {
+    content: '★';
+    font-size: 2.5rem;
+    color: #FFD700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  .chao-activity-item {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .chao-activity-item:hover {
+    background: rgba(255, 255, 255, 0.45);
+  }
+
+  .chao-activity-content {
+    flex: 1;
+  }
+
+  .chao-activity-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
+    margin-bottom: 0.5rem;
+  }
+
+  .chao-activity-details {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+  }
+
+  .chao-activity-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-end;
+  }
+
+  .chao-stat-contribution {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: white;
+  }
+
+  .chao-stat-icon-small {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-weight: 900;
+    font-size: 0.7rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+  }
+
+  .chao-stat-icon-small.strength {
+    background: linear-gradient(135deg, #CC4400, #FF6B00);
+    color: white;
+  }
+
+  .chao-stat-icon-small.endurance {
+    background: linear-gradient(135deg, #00CC66, #00FF88);
+    color: white;
+  }
+
+  .chao-stat-icon-small.agility {
+    background: linear-gradient(135deg, #CC9900, #FFD700);
+    color: #333;
+  }
+
+  .chao-loading {
+    text-align: center;
+    padding: 2rem;
+    color: white;
+    font-size: 1.2rem;
+  }
+
+  @media (max-width: 768px) {
+    .chao-character-name {
+      font-size: 2rem;
+    }
+
+    .chao-stat-label {
+      min-width: 120px;
+    }
+
+    .chao-stat-name {
+      font-size: 1.2rem;
+    }
+  }
+</style>
+
+<div class="chao-stats-container" id="chaoStatsContainer">
+  <!-- Header -->
+  <div class="chao-header">
+    <div class="chao-character-name" id="chaoCharacterName">Loading...</div>
+    <div class="chao-character-level" id="chaoCharacterLevel">Level --</div>
+  </div>
+
+  <!-- Stats Container -->
+  <div class="chao-stats-box">
+    <div class="chao-stats-grid" id="chaoStatsGrid">
+      <div class="chao-loading">Loading stats...</div>
+    </div>
+  </div>
+
+  <!-- Activities Section -->
+  <div class="chao-activities-section">
+    <div class="chao-activities-header">Recent Activities</div>
+    <div id="chaoActivitiesList">
+      <div class="chao-loading">Loading activities...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Chao Garden Stats Dashboard Logic
+(function() {
+  'use strict';
+
+  const statIcons = {
+    strength: 'P',
+    endurance: 'E',
+    agility: 'A'
+  };
+
+  // Calculate XP for current level (from backend formula)
+  function xpForCurrentLevel(level) {
+    return Math.pow(level, 2) * 1000;
+  }
+
+  // Calculate XP for next level
+  function xpForNextLevel(level) {
+    return Math.pow(level + 1, 2) * 1000;
+  }
+
+  // Get average XP for a stat from recent activities
+  function getAverageXPForStat(activities, statType) {
+    let total = 0;
+    let count = 0;
+
+    activities.forEach(activity => {
+      const xp = activity.xp?.[statType] || 0;
+      if (xp > 0) {
+        total += xp;
+        count++;
+      }
+    });
+
+    return count > 0 ? Math.round(total / count) : 1000;
+  }
+
+  // Calculate activities needed to level up
+  function calculateActivitiesNeeded(xpNeeded, avgXP) {
+    return Math.ceil(xpNeeded / avgXP);
+  }
+
+  // Render stat card with segmented progress
+  function renderStatCard(statName, statData, activities) {
+    const currentLevelXP = xpForCurrentLevel(statData.level);
+    const nextLevelXP = xpForNextLevel(statData.level);
+    const totalLevelXP = nextLevelXP - currentLevelXP;
+    const earnedInLevel = statData.xp - currentLevelXP;
+    const xpNeeded = nextLevelXP - statData.xp;
+
+    const avgXP = getAverageXPForStat(activities, statName);
+    const activitiesNeeded = calculateActivitiesNeeded(xpNeeded, avgXP);
+
+    // Create segments (5-10 based on activities needed)
+    const numSegments = Math.min(Math.max(activitiesNeeded, 5), 10);
+
+    // Calculate segment fill states
+    const segments = [];
+    for (let i = 0; i < numSegments; i++) {
+      const segmentStartXP = (i / numSegments) * totalLevelXP;
+      const segmentEndXP = ((i + 1) / numSegments) * totalLevelXP;
+
+      let fillClass = '';
+      let fillPercent = 0;
+
+      if (earnedInLevel >= segmentEndXP) {
+        fillClass = 'filled';
+        fillPercent = 100;
+      } else if (earnedInLevel > segmentStartXP) {
+        fillClass = 'partial';
+        fillPercent = ((earnedInLevel - segmentStartXP) / (segmentEndXP - segmentStartXP)) * 100;
+      }
+
+      segments.push({ fillClass, fillPercent });
+    }
+
+    const segmentsHTML = segments.map(seg => `
+      <div class="chao-progress-segment ${seg.fillClass}">
+        ${seg.fillPercent > 0 ? `
+          <div class="chao-progress-segment-fill ${statName}" style="transform: scaleX(${seg.fillPercent / 100})"></div>
+        ` : ''}
+      </div>
+    `).join('');
+
+    const remainingSegments = segments.filter(s => s.fillClass !== 'filled').length;
+
+    return `
+      <div class="chao-stat-card">
+        <div class="chao-stat-label">
+          <div class="chao-stat-icon ${statName}">${statIcons[statName]}</div>
+          <div class="chao-stat-name">${statName}</div>
+        </div>
+        <div class="chao-stat-info">
+          <div class="chao-stat-level-bar">
+            <div class="chao-progress-container">
+              ${segmentsHTML}
+            </div>
+            <div class="chao-stat-level">Lv ${statData.level}</div>
+          </div>
+          <div class="chao-xp-info">
+            ${remainingSegments} ${remainingSegments === 1 ? 'workout' : 'workouts'} to level up • ${statData.xp.toLocaleString()} / ${nextLevelXP.toLocaleString()} XP
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Render activities list
+  function renderActivities(activities) {
+    if (!activities || activities.length === 0) {
+      return '<div class="chao-loading">No recent activities</div>';
+    }
+
+    return activities.slice(0, 10).map(activity => {
+      const distance = activity.distance ? `${(activity.distance / 1000).toFixed(1)} km` : '';
+      const time = activity.elapsed_time ? formatTime(activity.elapsed_time) : '';
+      const details = [distance, time].filter(Boolean).join(' • ');
+
+      const stats = [];
+      if (activity.xp?.strength > 0) stats.push({ type: 'strength', xp: activity.xp.strength });
+      if (activity.xp?.endurance > 0) stats.push({ type: 'endurance', xp: activity.xp.endurance });
+      if (activity.xp?.agility > 0) stats.push({ type: 'agility', xp: activity.xp.agility });
+
+      const statsHTML = stats.map(stat => `
+        <div class="chao-stat-contribution ${stat.type}">
+          <span>+${Math.round(stat.xp)} XP</span>
+          <div class="chao-stat-icon-small ${stat.type}">${statIcons[stat.type]}</div>
+        </div>
+      `).join('');
+
+      return `
+        <div class="chao-activity-item">
+          <div class="chao-activity-content">
+            <div class="chao-activity-name">${activity.name || 'Untitled Activity'}</div>
+            <div class="chao-activity-details">${details}</div>
+          </div>
+          <div class="chao-activity-stats">
+            ${statsHTML}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Format time in seconds to readable format
+  function formatTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:00`;
+    }
+    return `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+  }
+
+  // Main render function
+  async function renderChaoStats(userId) {
+    try {
+      // Fetch stats
+      const statsRes = await fetch(`/stats/${userId}`);
+      const statsData = await statsRes.json();
+
+      if (!statsData.success) {
+        throw new Error('Failed to fetch stats');
+      }
+
+      // Fetch recent activities
+      const activitiesRes = await fetch(`/stats/${userId}/activities?limit=10`);
+      const activitiesData = await activitiesRes.json();
+
+      if (!activitiesData.success) {
+        throw new Error('Failed to fetch activities');
+      }
+
+      const { user, stats } = statsData.data;
+      const { activities } = activitiesData.data;
+
+      // Update header
+      document.getElementById('chaoCharacterName').textContent =
+        user.username || `${user.firstname || ''} ${user.lastname || ''}`.trim() || 'Adventurer';
+      document.getElementById('chaoCharacterLevel').textContent = `Level ${stats.level}`;
+
+      // Render stats
+      const statsHTML = [
+        renderStatCard('strength', {
+          level: stats.strength_level,
+          xp: stats.strength
+        }, activities),
+        renderStatCard('endurance', {
+          level: stats.endurance_level,
+          xp: stats.endurance
+        }, activities),
+        renderStatCard('agility', {
+          level: stats.agility_level,
+          xp: stats.agility
+        }, activities)
+      ].join('');
+
+      document.getElementById('chaoStatsGrid').innerHTML = statsHTML;
+
+      // Render activities
+      document.getElementById('chaoActivitiesList').innerHTML = renderActivities(activities);
+
+    } catch (error) {
+      console.error('Failed to render Chao stats:', error);
+      document.getElementById('chaoStatsGrid').innerHTML =
+        '<div class="chao-loading">Failed to load stats</div>';
+    }
+  }
+
+  // Export to global scope for integration
+  window.renderChaoStats = renderChaoStats;
+})();
+</script>

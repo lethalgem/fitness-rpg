@@ -224,43 +224,73 @@
     }
 
     .progress-container {
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 15px;
-      height: 28px;
-      overflow: hidden;
-      position: relative;
-      border: 3px solid rgba(255, 255, 255, 0.5);
-      box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      gap: 6px;
       flex: 1;
     }
 
-    .progress-fill {
-      height: 100%;
-      border-radius: 12px;
-      transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    .progress-segment {
+      flex: 1;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
       position: relative;
       overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-
-    .progress-fill.swim {
-      background: linear-gradient(90deg, var(--swim-color), #66D9FF);
-      box-shadow: 0 0 15px var(--swim-color);
+    .progress-segment.filled {
+      border-color: rgba(255, 255, 255, 0.8);
+      transform: scale(1.05);
     }
 
-    .progress-fill.power {
-      background: linear-gradient(90deg, var(--power-color), #FF8533);
-      box-shadow: 0 0 15px var(--power-color);
+    .progress-segment.partial {
+      border-color: rgba(255, 255, 255, 0.6);
     }
 
-    .progress-fill.agility {
-      background: linear-gradient(90deg, var(--agility-color), #FFE066);
-      box-shadow: 0 0 15px var(--agility-color);
+    .progress-segment-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-origin: left;
     }
 
-    .progress-fill.endurance {
-      background: linear-gradient(90deg, var(--endurance-color), #33FFAA);
-      box-shadow: 0 0 15px var(--endurance-color);
+    .progress-segment-fill.swim {
+      background: linear-gradient(135deg, var(--swim-color), #66D9FF);
+      color: var(--swim-color);
+    }
+
+    .progress-segment-fill.power {
+      background: linear-gradient(135deg, var(--power-color), #FF8533);
+      color: var(--power-color);
+    }
+
+    .progress-segment-fill.agility {
+      background: linear-gradient(135deg, var(--agility-color), #FFE066);
+      color: var(--agility-color);
+    }
+
+    .progress-segment-fill.endurance {
+      background: linear-gradient(135deg, var(--endurance-color), #33FFAA);
+      color: var(--endurance-color);
+    }
+
+    /* Pulse animation for filled segments */
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.85;
+      }
+    }
+
+    .progress-segment.filled .progress-segment-fill {
+      animation: pulse 2s ease-in-out infinite;
     }
 
 
@@ -510,22 +540,26 @@
       stats: {
         swim: {
           level: 12,
-          xp: 156000,
+          currentLevelXP: 156000,  // XP at start of level 12
+          xp: 165000,  // Close to leveling up - 1 workout left
           nextLevelXP: 169000
         },
         power: {
           level: 18,
-          xp: 341000,
+          currentLevelXP: 324000,  // XP at start of level 18
+          xp: 347500,  // About halfway through - several segments filled
           nextLevelXP: 361000
         },
         agility: {
           level: 15,
-          xp: 235000,
+          currentLevelXP: 225000,  // XP at start of level 15
+          xp: 236200,  // Just started the level - mostly empty
           nextLevelXP: 256000
         },
         endurance: {
           level: 20,
-          xp: 412000,
+          currentLevelXP: 400000,  // XP at start of level 20
+          xp: 432000,  // Good progress - several segments lit
           nextLevelXP: 441000
         }
       },
@@ -608,8 +642,57 @@
       };
 
       statsGrid.innerHTML = Object.entries(stats).map(([statName, statData]) => {
-        const progress = calculateProgress(statData.xp, statData.nextLevelXP);
-        const xpNeeded = statData.nextLevelXP - statData.xp;
+        const xpNeeded = statData.nextLevelXP - statData.xp; // XP needed to level up
+        const avgXP = getAverageXPForStat(statName);
+        const activitiesNeeded = calculateActivitiesNeeded(xpNeeded, statName);
+
+        // Create segments based on activities needed (cap at 10 segments for visual clarity)
+        const numSegments = Math.min(Math.max(activitiesNeeded, 5), 10);
+
+        // Each segment represents this much XP to fill
+        const xpPerSegment = xpNeeded / numSegments;
+
+        // Calculate how much XP we've already earned toward next level (from the end, working backwards)
+        // If we need 4000 XP and numSegments is 5, each segment is 800 XP
+        // We track progress from 0 (nothing filled) to xpNeeded (all filled)
+        // But we display from filled -> unfilled
+        const progressFromStart = 0; // We start with 0 progress in the new level view
+
+        // Calculate how many segments are filled (working from start of progress bar)
+        let segments = [];
+        for (let i = 0; i < numSegments; i++) {
+          segments.push({ fillClass: '', fillPercent: 0 });
+        }
+
+        // Calculate how much XP earned in current level
+        const currentLevelStartXP = statData.currentLevelXP || (statData.nextLevelXP - xpNeeded);
+        const totalLevelXP = statData.nextLevelXP - currentLevelStartXP;
+        const earnedInLevel = statData.xp - currentLevelStartXP;
+
+        // Fill segments based on earned XP
+        for (let i = 0; i < numSegments; i++) {
+          const segmentStartXP = (i / numSegments) * totalLevelXP;
+          const segmentEndXP = ((i + 1) / numSegments) * totalLevelXP;
+
+          if (earnedInLevel >= segmentEndXP) {
+            segments[i] = { fillClass: 'filled', fillPercent: 100 };
+          } else if (earnedInLevel > segmentStartXP) {
+            const fillPercent = ((earnedInLevel - segmentStartXP) / (segmentEndXP - segmentStartXP)) * 100;
+            segments[i] = { fillClass: 'partial', fillPercent: fillPercent };
+          }
+        }
+
+        console.log(`${statName}: earned=${earnedInLevel}, total=${totalLevelXP}, segments=${numSegments}`);
+
+        const segmentsHTML = segments.map((seg, idx) => `
+          <div class="progress-segment ${seg.fillClass}">
+            ${seg.fillPercent > 0 ? `
+              <div class="progress-segment-fill ${statName}" style="transform: scaleX(${seg.fillPercent / 100})"></div>
+            ` : ''}
+          </div>
+        `).join('');
+
+        const remainingSegments = segments.filter(s => s.fillClass !== 'filled').length;
 
         return `
           <div class="stat-card">
@@ -620,12 +703,12 @@
             <div class="stat-info">
               <div class="stat-level-bar">
                 <div class="progress-container">
-                  <div class="progress-fill ${statName}" style="width: ${progress}%"></div>
+                  ${segmentsHTML}
                 </div>
                 <div class="stat-level">Lv ${statData.level}</div>
               </div>
               <div class="xp-info">
-                ${statData.xp.toLocaleString()} / ${statData.nextLevelXP.toLocaleString()} XP
+                ${remainingSegments} ${remainingSegments === 1 ? 'workout' : 'workouts'} to level up • ${statData.xp.toLocaleString()} / ${statData.nextLevelXP.toLocaleString()} XP
               </div>
             </div>
           </div>

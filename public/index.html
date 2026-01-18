@@ -83,6 +83,7 @@
       <div class="tabs">
         <button class="tab-btn active" data-tab="stats">📊 My Stats</button>
         <button class="tab-btn" data-tab="friends">👥 Friends</button>
+        <button class="tab-btn" data-tab="leaderboards">🏆 Leaderboards</button>
       </div>
 
       <!-- Stats Tab -->
@@ -184,6 +185,54 @@
         </div>
       </div>
       <!-- End Friends Tab -->
+
+      <!-- Leaderboards Tab -->
+      <div id="leaderboardsTab" class="tab-content">
+        <!-- Category Selector -->
+        <div class="card leaderboard-controls">
+          <h3>Global Rankings</h3>
+          <div class="period-selector">
+            <button class="period-btn active" data-period="all_time">All Time</button>
+            <button class="period-btn" data-period="weekly">This Week</button>
+          </div>
+          <div class="category-selector">
+            <select id="leaderboardCategory" class="category-select">
+              <option value="level">Overall Level</option>
+              <option value="strength">💪 Strength</option>
+              <option value="endurance">🏃 Endurance</option>
+              <option value="agility">⚡ Agility</option>
+              <option value="activities">🎯 Total Activities</option>
+            </select>
+            <button id="sportFilterBtn" class="btn btn-secondary">By Sport</button>
+          </div>
+        </div>
+
+        <!-- Sport Filter (hidden by default) -->
+        <div id="sportFilterCard" class="card sport-filter" style="display: none;">
+          <h3>Filter by Sport</h3>
+          <div id="sportButtons" class="sport-buttons">
+            <p class="loading">Loading sports...</p>
+          </div>
+          <button id="closeSportFilter" class="btn btn-secondary">Back to Overall</button>
+        </div>
+
+        <!-- Your Ranking Card -->
+        <div id="userRankingCard" class="card user-ranking">
+          <h3>Your Ranking</h3>
+          <div id="userRanking" class="user-ranking-content">
+            <p class="loading">Loading...</p>
+          </div>
+        </div>
+
+        <!-- Leaderboard List -->
+        <div class="card leaderboard-card">
+          <h3 id="leaderboardTitle">Top Athletes</h3>
+          <div id="leaderboardList" class="leaderboard-list">
+            <p class="loading">Loading leaderboard...</p>
+          </div>
+        </div>
+      </div>
+      <!-- End Leaderboards Tab -->
 
       <!-- Friend Comparison Modal -->
       <div id="compareModal" class="modal" style="display: none;">

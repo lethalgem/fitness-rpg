@@ -71,17 +71,22 @@ CREATE TABLE IF NOT EXISTS user_stats (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
   stat_type TEXT NOT NULL,
+  time_period TEXT NOT NULL DEFAULT 'all_time',
   stat_value REAL NOT NULL DEFAULT 0,
   total_xp REAL NOT NULL DEFAULT 0,
   level INTEGER NOT NULL DEFAULT 1,
   activities_count INTEGER NOT NULL DEFAULT 0,
   updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  UNIQUE(user_id, stat_type)
+  UNIQUE(user_id, stat_type, time_period)
 );
 
 CREATE INDEX idx_user_stats_user_id ON user_stats(user_id);
 CREATE INDEX idx_user_stats_stat_type ON user_stats(stat_type);
+CREATE INDEX idx_user_stats_time_period ON user_stats(time_period);
+CREATE INDEX idx_user_stats_level ON user_stats(level DESC);
+CREATE INDEX idx_user_stats_stat_value ON user_stats(stat_value DESC);
+CREATE INDEX idx_user_stats_period_level ON user_stats(time_period, level DESC);
 
 -- Rate limit tracking table: tracks Strava API usage
 CREATE TABLE IF NOT EXISTS rate_limits (

@@ -20,6 +20,7 @@ export interface User {
   access_token: string;
   refresh_token: string;
   expires_at: number;
+  last_dismissed_job_id?: number;
   created_at: number;
   updated_at: number;
 }

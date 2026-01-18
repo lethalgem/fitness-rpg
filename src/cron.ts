@@ -6,6 +6,10 @@ import { createDbClient } from './db/client';
 import { JobRepository } from './db/jobs';
 import { ImportJobProcessor } from './jobs/importer';
 import { RateLimiter } from './jobs/rate-limiter';
+import { UserRepository } from './db/users';
+import { ActivityRepository } from './db/activities';
+import { UserStatsRepository } from './db/user-stats';
+import { calculateUserStats } from './stats/calculator';
 import { log, error as logError } from './utils/logger';
 
 async function processImports(env: Env): Promise<void> {
@@ -96,12 +100,75 @@ async function processImports(env: Env): Promise<void> {
   });
 }
 
+async function cacheAllUserStats(env: Env): Promise<void> {
+  const dbClient = createDbClient(env);
+  const userRepo = new UserRepository(dbClient);
+  const activityRepo = new ActivityRepository(dbClient);
+  const statsRepo = new UserStatsRepository(dbClient);
+
+  log('Starting stats cache update');
+
+  try {
+    // Get all users
+    const users = await userRepo.findAll();
+    log(`Caching stats for ${users.length} users`);
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Calculate timestamp for 7 days ago
+    const now = Math.floor(Date.now() / 1000);
+    const sevenDaysAgo = now - (7 * 24 * 60 * 60);
+
+    // Update stats for each user
+    for (const user of users) {
+      try {
+        // Get user's all-time activities
+        const allActivities = await activityRepo.findByUserId(user.id, 10000);
+
+        // Calculate all-time stats
+        const allTimeStats = calculateUserStats(allActivities);
+
+        // Cache all-time stats
+        await statsRepo.upsertOverallStats(user.id, allTimeStats, 'all_time');
+
+        // Get user's weekly activities (last 7 days)
+        const weeklyActivities = await activityRepo.findByUserIdSince(user.id, sevenDaysAgo, 10000);
+
+        // Calculate weekly stats
+        const weeklyStats = calculateUserStats(weeklyActivities);
+
+        // Cache weekly stats
+        await statsRepo.upsertOverallStats(user.id, weeklyStats, 'weekly');
+
+        successCount++;
+      } catch (err) {
+        logError(`Failed to cache stats for user ${user.id}`, err);
+        errorCount++;
+      }
+    }
+
+    log('Stats cache update completed', {
+      totalUsers: users.length,
+      success: successCount,
+      errors: errorCount,
+    });
+  } catch (err) {
+    logError('Stats cache update failed', err);
+    throw err;
+  }
+}
+
 export default {
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     log('Cron job started', { scheduledTime: new Date(event.scheduledTime).toISOString() });
 
     try {
+      // Process import jobs
       await processImports(env);
+
+      // Cache user stats for leaderboards
+      await cacheAllUserStats(env);
     } catch (err) {
       logError('Cron job failed', err);
       throw err;
@@ -109,4 +176,5 @@ export default {
   },
 
   processImports,
+  cacheAllUserStats,
 };

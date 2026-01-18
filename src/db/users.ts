@@ -93,4 +93,8 @@ export class UserRepository {
     );
     log('User last dismissed job updated', { userId, jobId });
   }
+
+  async findAll(): Promise<User[]> {
+    return this.db.all<User>('SELECT * FROM users ORDER BY id');
+  }
 }

@@ -36,6 +36,16 @@ export class ActivityRepository {
     return result?.count || 0;
   }
 
+  async findByUserIdSince(userId: number, sinceTimestamp: number, limit: number = 10000): Promise<Activity[]> {
+    return this.db.all<Activity>(
+      `SELECT * FROM activities
+       WHERE user_id = ? AND strftime('%s', start_date) >= ?
+       ORDER BY start_date DESC
+       LIMIT ?`,
+      [userId, sinceTimestamp, limit]
+    );
+  }
+
   async batchUpsert(userId: number, activities: StravaSummaryActivity[]): Promise<number> {
     if (activities.length === 0) return 0;
 

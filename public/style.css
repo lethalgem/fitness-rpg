@@ -968,3 +968,279 @@ footer a {
     align-items: flex-start;
   }
 }
+
+/* ====================================
+   Leaderboards Styles
+   ==================================== */
+
+.leaderboard-controls {
+  margin-bottom: 1.5rem;
+}
+
+.period-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  background: #f8f9fa;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.period-btn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #718096;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.period-btn:hover {
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.period-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.category-selector {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.category-select {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.category-select:hover {
+  border-color: #667eea;
+}
+
+.category-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sport-filter {
+  margin-bottom: 1.5rem;
+}
+
+.sport-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.sport-btn {
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sport-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.sport-count {
+  opacity: 0.8;
+  font-size: 0.85rem;
+  margin-left: 0.25rem;
+}
+
+.user-ranking {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+.user-ranking h3 {
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.rank-display {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.rank-number {
+  font-size: 3rem;
+  font-weight: 700;
+  min-width: 80px;
+  text-align: center;
+}
+
+.rank-details {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.rank-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.rank-label {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.rank-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.leaderboard-card {
+  margin-bottom: 2rem;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.leaderboard-entry {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.leaderboard-entry:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-entry.current-user {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border: 2px solid #667eea;
+  font-weight: 600;
+}
+
+.entry-rank {
+  font-size: 1.5rem;
+  font-weight: 700;
+  min-width: 50px;
+  text-align: center;
+  color: #667eea;
+}
+
+.entry-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.entry-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.entry-avatar .avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0e0e0;
+  font-size: 1.5rem;
+}
+
+.entry-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-stats {
+  font-size: 0.9rem;
+  color: #718096;
+}
+
+.entry-level {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #667eea;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Responsive leaderboards */
+@media (max-width: 768px) {
+  .category-selector {
+    flex-direction: column;
+  }
+
+  .rank-display {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .rank-details {
+    justify-content: center;
+  }
+
+  .entry-rank {
+    min-width: 40px;
+    font-size: 1.25rem;
+  }
+
+  .entry-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .entry-name {
+    font-size: 1rem;
+  }
+
+  .entry-level {
+    min-width: 50px;
+    font-size: 1.1rem;
+  }
+}

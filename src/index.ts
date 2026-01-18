@@ -6,6 +6,7 @@ import type { Env } from './types';
 import auth from './routes/auth';
 import stats from './routes/stats';
 import friends from './routes/friends';
+import leaderboard from './routes/leaderboard';
 import cronHandler from './cron';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -17,6 +18,7 @@ app.use('/*', cors());
 app.route('/auth', auth);
 app.route('/stats', stats);
 app.route('/friends', friends);
+app.route('/leaderboard', leaderboard);
 
 // Health check
 app.get('/health', (c) => {
@@ -32,6 +34,17 @@ app.get('/cron/trigger', async (c) => {
     })
   );
   return c.json({ success: true, message: 'Cron job started in background' });
+});
+
+// Manual stats cache update trigger (for testing)
+app.get('/cron/cache-stats', async (c) => {
+  // Run job in background using waitUntil so request returns immediately
+  c.executionCtx.waitUntil(
+    cronHandler.cacheAllUserStats(c.env).catch((error) => {
+      console.error('Background stats cache update failed:', error);
+    })
+  );
+  return c.json({ success: true, message: 'Stats cache update started in background' });
 });
 
 // Dismiss import job completion message
@@ -110,10 +123,11 @@ app.post('/sync/:userId', async (c) => {
       let accessToken = user.access_token;
 
       if (needsRefresh) {
-        const { refreshStravaToken } = await import('./strava/auth');
-        const tokenInfo = await refreshStravaToken(user.refresh_token, c.env);
-        await userRepo.updateTokens(user.id, tokenInfo.accessToken, tokenInfo.refreshToken, tokenInfo.expiresAt);
-        accessToken = tokenInfo.accessToken;
+        const { StravaAuth } = await import('./strava/auth');
+        const stravaAuth = new StravaAuth(c.env);
+        const tokenResponse = await stravaAuth.refreshToken(user.refresh_token);
+        await userRepo.updateTokens(user.id, tokenResponse.access_token, tokenResponse.refresh_token, tokenResponse.expires_at);
+        accessToken = tokenResponse.access_token;
       }
 
       // Do a quick check to see if there are any new activities

@@ -153,8 +153,12 @@ function updateUserInfo(user) {
               syncBtn.textContent = '🔄 Sync';
             }, 2000);
           } else {
-            // Refresh dashboard to show new import status
-            loadDashboard(userId);
+            // Sync started, wait a moment for initial activities to import
+            syncBtn.textContent = '⏳ Importing...';
+            setTimeout(() => {
+              // Refresh dashboard to show new activities and start polling
+              loadDashboard(userId);
+            }, 3000); // Wait 3 seconds for some activities to be imported
           }
         } else {
           alert(data.error || 'Failed to start sync');
@@ -523,6 +527,9 @@ function switchTab(tabName) {
   } else if (tabName === 'friends') {
     document.getElementById('friendsTab').classList.add('active');
     loadFriendsTab();
+  } else if (tabName === 'leaderboards') {
+    document.getElementById('leaderboardsTab').classList.add('active');
+    loadLeaderboardsTab();
   }
 }
 
@@ -936,4 +943,279 @@ function createComparisonChart(userStats, friendStats) {
       },
     },
   });
+}
+
+// ====================================
+// Leaderboards Tab Functions
+// ====================================
+
+let currentLeaderboardType = 'level';
+let currentSportType = null;
+let currentTimePeriod = 'all_time';
+
+async function loadLeaderboardsTab() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) return;
+
+  // Set up period selector
+  document.querySelectorAll('.period-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTimePeriod = btn.dataset.period;
+      currentSportType = null;
+      document.getElementById('sportFilterCard').style.display = 'none';
+      loadLeaderboard(userId, currentLeaderboardType, null, currentTimePeriod);
+    };
+  });
+
+  // Set up category selector
+  const categorySelect = document.getElementById('leaderboardCategory');
+  categorySelect.onchange = () => {
+    currentLeaderboardType = categorySelect.value;
+    currentSportType = null;
+    document.getElementById('sportFilterCard').style.display = 'none';
+    loadLeaderboard(userId, currentLeaderboardType, null, currentTimePeriod);
+  };
+
+  // Set up sport filter button
+  const sportFilterBtn = document.getElementById('sportFilterBtn');
+  sportFilterBtn.onclick = () => {
+    showSportFilter();
+  };
+
+  const closeSportFilter = document.getElementById('closeSportFilter');
+  closeSportFilter.onclick = () => {
+    currentSportType = null;
+    document.getElementById('sportFilterCard').style.display = 'none';
+    document.getElementById('leaderboardCategory').disabled = false;
+    loadLeaderboard(userId, currentLeaderboardType, null, currentTimePeriod);
+  };
+
+  // Load initial leaderboard
+  await loadLeaderboard(userId, currentLeaderboardType, null, currentTimePeriod);
+}
+
+async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all_time') {
+  const leaderboardList = document.getElementById('leaderboardList');
+  const leaderboardTitle = document.getElementById('leaderboardTitle');
+  const userRanking = document.getElementById('userRanking');
+
+  try {
+    let leaderboardData, userRankData;
+
+    if (sportType) {
+      // Load sport-specific leaderboard
+      const response = await fetch(`/leaderboard/sport?sport_type=${encodeURIComponent(sportType)}&limit=100`);
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to load leaderboard');
+      }
+
+      leaderboardData = data.data.leaderboard;
+      leaderboardTitle.textContent = `🏆 ${sportType} Rankings`;
+
+      // Find user's rank in sport leaderboard
+      const userEntry = leaderboardData.find(e => e.user_id === parseInt(userId));
+      userRankData = userEntry ? {
+        rank: userEntry.rank,
+        activity_count: userEntry.activity_count,
+        total_distance: userEntry.total_distance,
+        total_time: userEntry.total_time
+      } : null;
+    } else {
+      // Load overall leaderboard
+      const [leaderboardResponse, rankResponse] = await Promise.all([
+        fetch(`/leaderboard?type=${type}&limit=100&period=${timePeriod}`),
+        fetch(`/leaderboard/me/${userId}?type=${type}&period=${timePeriod}`)
+      ]);
+
+      const leaderboardDataRes = await leaderboardResponse.json();
+      const rankDataRes = await rankResponse.json();
+
+      if (!leaderboardDataRes.success || !rankDataRes.success) {
+        throw new Error('Failed to load leaderboard');
+      }
+
+      leaderboardData = leaderboardDataRes.data.leaderboard;
+      userRankData = rankDataRes.data;
+
+      // Update title based on type and period
+      const titles = {
+        level: 'Overall Level',
+        strength: '💪 Strength',
+        endurance: '🏃 Endurance',
+        agility: '⚡ Agility',
+        activities: '🎯 Total Activities'
+      };
+      const periodLabel = timePeriod === 'weekly' ? ' (This Week)' : '';
+      leaderboardTitle.textContent = `🏆 ${titles[type] || 'Top Athletes'}${periodLabel}`;
+    }
+
+    // Render user ranking
+    if (userRankData) {
+      if (sportType) {
+        userRanking.innerHTML = `
+          <div class="rank-display">
+            <div class="rank-number">#${userRankData.rank}</div>
+            <div class="rank-details">
+              <div class="rank-stat">
+                <span class="rank-label">Activities:</span>
+                <span class="rank-value">${userRankData.activity_count}</span>
+              </div>
+              <div class="rank-stat">
+                <span class="rank-label">Distance:</span>
+                <span class="rank-value">${formatDistance(userRankData.total_distance)}</span>
+              </div>
+              <div class="rank-stat">
+                <span class="rank-label">Time:</span>
+                <span class="rank-value">${formatTime(userRankData.total_time)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        userRanking.innerHTML = `
+          <div class="rank-display">
+            <div class="rank-number">#${userRankData.rank}</div>
+            <div class="rank-details">
+              <div class="rank-stat">
+                <span class="rank-label">Level:</span>
+                <span class="rank-value">${userRankData.level}</span>
+              </div>
+              <div class="rank-stat">
+                <span class="rank-label">XP:</span>
+                <span class="rank-value">${userRankData.total_xp.toLocaleString()}</span>
+              </div>
+              <div class="rank-stat">
+                <span class="rank-label">Activities:</span>
+                <span class="rank-value">${userRankData.activities_count}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    } else {
+      userRanking.innerHTML = '<p class="no-data">You haven\'t done any activities of this type yet.</p>';
+    }
+
+    // Render leaderboard entries
+    if (leaderboardData.length === 0) {
+      leaderboardList.innerHTML = '<p class="no-data">No data available</p>';
+      return;
+    }
+
+    leaderboardList.innerHTML = leaderboardData.map(entry => {
+      const isCurrentUser = entry.user_id === parseInt(userId);
+      const rankBadge = getRankBadge(entry.rank);
+      const displayName = entry.name || 'Unknown User';
+
+      if (sportType) {
+        return `
+          <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''}">
+            <div class="entry-rank">${rankBadge}</div>
+            <div class="entry-avatar">
+              ${entry.profile_url ?
+                `<img src="${entry.profile_url}" alt="${displayName}">` :
+                '<div class="avatar-placeholder">👤</div>'}
+            </div>
+            <div class="entry-info">
+              <div class="entry-name">${displayName}</div>
+              <div class="entry-stats">
+                ${entry.activity_count} activities · ${formatDistance(entry.total_distance)}
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''}">
+            <div class="entry-rank">${rankBadge}</div>
+            <div class="entry-avatar">
+              ${entry.profile_url ?
+                `<img src="${entry.profile_url}" alt="${displayName}">` :
+                '<div class="avatar-placeholder">👤</div>'}
+            </div>
+            <div class="entry-info">
+              <div class="entry-name">${displayName}</div>
+              <div class="entry-stats">
+                Level ${entry.level} · ${entry.total_xp.toLocaleString()} XP · ${entry.activities_count} activities
+              </div>
+            </div>
+            <div class="entry-level">Lvl ${entry.level}</div>
+          </div>
+        `;
+      }
+    }).join('');
+
+  } catch (err) {
+    console.error('Failed to load leaderboard', err);
+    leaderboardList.innerHTML = '<p class="error">Failed to load leaderboard. Please try again.</p>';
+    userRanking.innerHTML = '<p class="error">Failed to load your ranking.</p>';
+  }
+}
+
+async function showSportFilter() {
+  const sportFilterCard = document.getElementById('sportFilterCard');
+  const sportButtons = document.getElementById('sportButtons');
+  const userId = localStorage.getItem('userId');
+
+  sportFilterCard.style.display = 'block';
+  document.getElementById('leaderboardCategory').disabled = true;
+
+  try {
+    const response = await fetch('/leaderboard/sports?min_activities=5');
+    const data = await response.json();
+
+    if (!data.success || !data.data.sports) {
+      throw new Error('Failed to load sports');
+    }
+
+    const sports = data.data.sports;
+
+    sportButtons.innerHTML = sports.map(sport => `
+      <button class="sport-btn" data-sport="${sport.sport_type}">
+        ${sport.sport_type}
+        <span class="sport-count">(${sport.total_count})</span>
+      </button>
+    `).join('');
+
+    // Add click handlers
+    document.querySelectorAll('.sport-btn').forEach(btn => {
+      btn.onclick = () => {
+        currentSportType = btn.dataset.sport;
+        loadLeaderboard(userId, null, currentSportType, currentTimePeriod);
+      };
+    });
+
+  } catch (err) {
+    console.error('Failed to load sports', err);
+    sportButtons.innerHTML = '<p class="error">Failed to load sports.</p>';
+  }
+}
+
+function getRankBadge(rank) {
+  const badges = {
+    1: '🥇',
+    2: '🥈',
+    3: '🥉'
+  };
+  return badges[rank] || `#${rank}`;
+}
+
+function formatDistance(meters) {
+  if (!meters) return '0 km';
+  const km = meters / 1000;
+  return km.toFixed(1) + ' km';
+}
+
+function formatTime(seconds) {
+  if (!seconds) return '0m';
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
 }

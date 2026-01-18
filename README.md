@@ -220,7 +220,7 @@ Each sport type distributes XP across Strength, Endurance, and Agility:
 ### Background Jobs
 - Cron worker runs every 15 minutes
 - Fetches activities in batches of 200
-- Respects Strava rate limits (200/15min, 2000/day)
+- Respects Strava rate limits (300/15min, 3000/day for read requests)
 - Pauses automatically if rate limit approached
 
 ## 🔐 Privacy & Security

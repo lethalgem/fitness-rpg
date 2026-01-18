@@ -12,6 +12,28 @@ import { log } from '../utils/logger';
 
 const friends = new Hono<{ Bindings: Env }>();
 
+// GET /friends/search - Search for users to add as friends
+// IMPORTANT: This route must come BEFORE /:userId to avoid matching "search" as a userId
+friends.get('/search', async (c) => {
+  try {
+    const query = c.req.query('q') || '';
+
+    if (query.length < 2) {
+      return error('Search query must be at least 2 characters');
+    }
+
+    const dbClient = createDbClient(c.env);
+    const friendshipRepo = new FriendshipRepository(dbClient);
+
+    const users = await friendshipRepo.searchUsers(query, 20);
+
+    return success({ users });
+  } catch (err) {
+    console.error('Failed to search users', err);
+    return error('Failed to search users');
+  }
+});
+
 // GET /friends/:userId - Get user's friends list with their stats
 friends.get('/:userId', async (c) => {
   try {
@@ -237,27 +259,6 @@ friends.delete('/:userId/:friendId', async (c) => {
   } catch (err) {
     console.error('Failed to remove friend', err);
     return error('Failed to remove friend');
-  }
-});
-
-// GET /friends/search - Search for users to add as friends
-friends.get('/search', async (c) => {
-  try {
-    const query = c.req.query('q') || '';
-
-    if (query.length < 2) {
-      return error('Search query must be at least 2 characters');
-    }
-
-    const dbClient = createDbClient(c.env);
-    const friendshipRepo = new FriendshipRepository(dbClient);
-
-    const users = await friendshipRepo.searchUsers(query, 20);
-
-    return success({ users });
-  } catch (err) {
-    console.error('Failed to search users', err);
-    return error('Failed to search users');
   }
 });
 

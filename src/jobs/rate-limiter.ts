@@ -3,11 +3,11 @@
 import type { DatabaseClient } from '../db/client';
 import { log } from '../utils/logger';
 
-// Strava rate limits for READ requests: 100 per 15 minutes, 1000 per day
-// (Overall limits are 200/2000, but we only use read endpoints)
-const SHORT_WINDOW_LIMIT = 100;
+// Strava rate limits for READ requests: 300 per 15 minutes, 3000 per day
+// (Overall limits are 600/6000, but we only use read endpoints)
+const SHORT_WINDOW_LIMIT = 300;
 const SHORT_WINDOW_SECONDS = 15 * 60; // 15 minutes
-const LONG_WINDOW_LIMIT = 1000;
+const LONG_WINDOW_LIMIT = 3000;
 const LONG_WINDOW_SECONDS = 24 * 60 * 60; // 24 hours
 
 export class RateLimiter {

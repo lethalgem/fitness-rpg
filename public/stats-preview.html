@@ -16,7 +16,7 @@
       --swim-color: #00C3FF;
       --power-color: #FF6B00;
       --agility-color: #FFD700;
-      --stamina-color: #00FF88;
+      --endurance-color: #00FF88;
       --shadow: rgba(0, 0, 0, 0.15);
     }
 
@@ -155,6 +155,43 @@
       text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
       text-transform: uppercase;
       letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-weight: 900;
+      font-size: 1.2rem;
+      text-shadow: none;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+
+    .stat-icon.swim {
+      background: linear-gradient(135deg, #0099CC, #00C3FF);
+      color: white;
+    }
+
+    .stat-icon.power {
+      background: linear-gradient(135deg, #CC4400, #FF6B00);
+      color: white;
+    }
+
+    .stat-icon.agility {
+      background: linear-gradient(135deg, #CC9900, #FFD700);
+      color: #333;
+    }
+
+    .stat-icon.endurance {
+      background: linear-gradient(135deg, #00CC66, #00FF88);
+      color: white;
     }
 
     .stat-level {
@@ -206,9 +243,9 @@
       box-shadow: 0 0 15px var(--agility-color);
     }
 
-    .progress-fill.stamina {
-      background: linear-gradient(90deg, var(--stamina-color), #33FFAA);
-      box-shadow: 0 0 15px var(--stamina-color);
+    .progress-fill.endurance {
+      background: linear-gradient(90deg, var(--endurance-color), #33FFAA);
+      box-shadow: 0 0 15px var(--endurance-color);
     }
 
     .xp-needed {
@@ -243,6 +280,24 @@
       text-align: center;
       text-transform: uppercase;
       letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+
+    .activities-header::before {
+      content: '★';
+      font-size: 2.5rem;
+      color: #FFD700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .activities-header::after {
+      content: '★';
+      font-size: 2.5rem;
+      color: #FFD700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     }
 
     .activity-item {
@@ -252,11 +307,18 @@
       margin-bottom: 1rem;
       border: 3px solid rgba(255, 255, 255, 0.5);
       transition: all 0.3s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
     }
 
     .activity-item:hover {
       background: rgba(255, 255, 255, 0.45);
-      transform: translateX(10px);
+    }
+
+    .activity-content {
+      flex: 1;
     }
 
     .activity-name {
@@ -268,10 +330,61 @@
     }
 
     .activity-details {
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: rgba(255, 255, 255, 0.95);
       font-weight: 600;
     }
+
+    .activity-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+
+    .stat-contribution {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .stat-contribution .stat-icon-small {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      font-weight: 900;
+      font-size: 0.7rem;
+      text-shadow: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+
+    .stat-icon-small.swim {
+      background: linear-gradient(135deg, #0099CC, #00C3FF);
+      color: white;
+    }
+
+    .stat-icon-small.power {
+      background: linear-gradient(135deg, #CC4400, #FF6B00);
+      color: white;
+    }
+
+    .stat-icon-small.agility {
+      background: linear-gradient(135deg, #CC9900, #FFD700);
+      color: #333;
+    }
+
+    .stat-icon-small.endurance {
+      background: linear-gradient(135deg, #00CC66, #00FF88);
+      color: white;
+    }
+
 
     .stat-badge {
       display: inline-block;
@@ -376,7 +489,7 @@
     </div>
 
     <div class="activities-section">
-      <div class="activities-header">🏆 Recent Activities</div>
+      <div class="activities-header">Recent Activities</div>
       <div id="activitiesList">
         <!-- Activities will be populated by JavaScript -->
       </div>
@@ -406,17 +519,49 @@
           xp: 235000,
           nextLevelXP: 256000
         },
-        stamina: {
+        endurance: {
           level: 20,
           xp: 412000,
           nextLevelXP: 441000
         }
       },
       recentActivities: [
-        { name: "Morning Run", distance: "5.2 km", time: "28:34", stat: "agility", xp: 1200 },
-        { name: "Pool Swim", distance: "1.5 km", time: "45:12", stat: "swim", xp: 2800 },
-        { name: "Weight Training", weight: "Total: 4500 kg", time: "52:00", stat: "power", xp: 3200 },
-        { name: "Cycling", distance: "25 km", time: "1:12:45", stat: "stamina", xp: 2400 }
+        {
+          name: "Morning Run",
+          distance: "5.2 km",
+          time: "28:34",
+          stats: [
+            { type: "agility", xp: 850 },
+            { type: "endurance", xp: 350 }
+          ]
+        },
+        {
+          name: "Pool Swim",
+          distance: "1.5 km",
+          time: "45:12",
+          stats: [
+            { type: "swim", xp: 2200 },
+            { type: "endurance", xp: 600 }
+          ]
+        },
+        {
+          name: "Weight Training",
+          weight: "Total: 4500 kg",
+          time: "52:00",
+          stats: [
+            { type: "power", xp: 2800 },
+            { type: "endurance", xp: 400 }
+          ]
+        },
+        {
+          name: "Cycling",
+          distance: "25 km",
+          time: "1:12:45",
+          stats: [
+            { type: "endurance", xp: 1800 },
+            { type: "agility", xp: 600 }
+          ]
+        }
       ]
     };
 
@@ -425,24 +570,59 @@
       return Math.min(progress, 100);
     }
 
+    function getAverageXPForStat(statType) {
+      // Calculate average XP from recent activities for this stat
+      let total = 0;
+      let count = 0;
+
+      mockData.recentActivities.forEach(activity => {
+        activity.stats.forEach(stat => {
+          if (stat.type === statType) {
+            total += stat.xp;
+            count++;
+          }
+        });
+      });
+
+      return count > 0 ? Math.round(total / count) : 1000; // Default to 1000 if no data
+    }
+
+    function calculateActivitiesNeeded(xpNeeded, statType) {
+      const avgXP = getAverageXPForStat(statType);
+      return Math.ceil(xpNeeded / avgXP);
+    }
+
     function renderStats() {
       const statsGrid = document.getElementById('statsGrid');
       const stats = mockData.stats;
 
       const statIcons = {
-        swim: '🏊',
-        power: '💪',
-        agility: '⚡',
-        stamina: '❤️'
+        swim: 'S',
+        power: 'P',
+        agility: 'A',
+        endurance: 'E'
       };
 
       statsGrid.innerHTML = Object.entries(stats).map(([statName, statData]) => {
         const progress = calculateProgress(statData.xp, statData.nextLevelXP);
+        const xpNeeded = statData.nextLevelXP - statData.xp;
+        const activitiesNeeded = calculateActivitiesNeeded(xpNeeded, statName);
+
+        // Get a friendly activity name based on stat type
+        const activityNames = {
+          swim: 'swims',
+          power: 'strength workouts',
+          agility: 'runs',
+          endurance: 'cardio sessions'
+        };
 
         return `
           <div class="stat-card">
             <div class="stat-header">
-              <div class="stat-name">${statIcons[statName]} ${statName}</div>
+              <div class="stat-name">
+                <div class="stat-icon ${statName}">${statIcons[statName]}</div>
+                ${statName}
+              </div>
               <div class="stat-level">Lv ${statData.level}</div>
             </div>
             <div class="xp-info">
@@ -450,7 +630,9 @@
             </div>
             <div class="progress-container">
               <div class="progress-fill ${statName}" style="width: ${progress}%"></div>
-              <div class="progress-percentage">${Math.round(progress)}%</div>
+            </div>
+            <div class="xp-needed">
+              About <strong>${activitiesNeeded} more ${activityNames[statName]}</strong> to level up!
             </div>
           </div>
         `;
@@ -460,17 +642,37 @@
     function renderActivities() {
       const activitiesList = document.getElementById('activitiesList');
 
-      activitiesList.innerHTML = mockData.recentActivities.map(activity => `
-        <div class="activity-item">
-          <div class="activity-name">
-            ${activity.name}
-            <span class="stat-badge ${activity.stat}">+${activity.xp} XP</span>
+      const statIcons = {
+        swim: 'S',
+        power: 'P',
+        agility: 'A',
+        endurance: 'E'
+      };
+
+      activitiesList.innerHTML = mockData.recentActivities.map(activity => {
+        const totalXP = activity.stats.reduce((sum, stat) => sum + stat.xp, 0);
+
+        return `
+          <div class="activity-item">
+            <div class="activity-content">
+              <div class="activity-name">
+                ${activity.name}
+              </div>
+              <div class="activity-details">
+                ${activity.distance || activity.weight} • ${activity.time}
+              </div>
+            </div>
+            <div class="activity-stats">
+              ${activity.stats.map(stat => `
+                <div class="stat-contribution ${stat.type}">
+                  <span>+${stat.xp} XP</span>
+                  <div class="stat-icon-small ${stat.type}">${statIcons[stat.type]}</div>
+                </div>
+              `).join('')}
+            </div>
           </div>
-          <div class="activity-details">
-            ${activity.distance || activity.weight} • ${activity.time}
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function init() {

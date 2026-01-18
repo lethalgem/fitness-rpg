@@ -120,55 +120,55 @@
       text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
     }
 
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .stat-card {
+    .stats-container {
       background: var(--ui-blue);
       border: 4px solid var(--ui-border);
       border-radius: 35px;
-      padding: 2rem;
+      padding: 2.5rem;
       box-shadow: 0 8px 30px var(--shadow);
       backdrop-filter: blur(10px);
-      transition: transform 0.3s ease;
+      margin-bottom: 2rem;
     }
 
-    .stat-card:hover {
-      transform: translateY(-5px) scale(1.02);
-    }
-
-    .stat-header {
+    .stats-grid {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .stat-card {
+      display: flex;
       align-items: center;
-      margin-bottom: 1.5rem;
+      gap: 1.5rem;
+      padding: 0;
+    }
+
+    .stat-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 180px;
+      flex-shrink: 0;
     }
 
     .stat-name {
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: white;
       text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
       text-transform: uppercase;
       letter-spacing: 1px;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
     }
 
     .stat-icon {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 8px;
+      border-radius: 6px;
       font-weight: 900;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       text-shadow: none;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
       flex-shrink: 0;
@@ -194,34 +194,49 @@
       color: white;
     }
 
+    .stat-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .stat-level-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
     .stat-level {
-      font-size: 2rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: #FFD700;
       text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+      min-width: 60px;
+      text-align: right;
     }
 
     .xp-info {
-      font-size: 1.2rem;
-      color: white;
-      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.85);
       font-weight: 600;
       text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
     }
 
     .progress-container {
       background: rgba(255, 255, 255, 0.3);
-      border-radius: 20px;
-      height: 40px;
+      border-radius: 15px;
+      height: 28px;
       overflow: hidden;
       position: relative;
       border: 3px solid rgba(255, 255, 255, 0.5);
       box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.1);
+      flex: 1;
     }
 
     .progress-fill {
       height: 100%;
-      border-radius: 17px;
+      border-radius: 12px;
       transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
@@ -248,19 +263,6 @@
       box-shadow: 0 0 15px var(--endurance-color);
     }
 
-    .xp-needed {
-      font-size: 1rem;
-      color: rgba(255, 255, 255, 0.9);
-      margin-top: 0.5rem;
-      font-weight: 600;
-      text-align: center;
-      text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
-    }
-
-    .xp-needed strong {
-      color: white;
-      font-weight: 700;
-    }
 
     .activities-section {
       background: var(--ui-blue);
@@ -484,8 +486,10 @@
       <div class="character-level" id="characterLevel">Level --</div>
     </div>
 
-    <div class="stats-grid" id="statsGrid">
-      <!-- Stats will be populated by JavaScript -->
+    <div class="stats-container">
+      <div class="stats-grid" id="statsGrid">
+        <!-- Stats will be populated by JavaScript -->
+      </div>
     </div>
 
     <div class="activities-section">
@@ -606,33 +610,23 @@
       statsGrid.innerHTML = Object.entries(stats).map(([statName, statData]) => {
         const progress = calculateProgress(statData.xp, statData.nextLevelXP);
         const xpNeeded = statData.nextLevelXP - statData.xp;
-        const activitiesNeeded = calculateActivitiesNeeded(xpNeeded, statName);
-
-        // Get a friendly activity name based on stat type
-        const activityNames = {
-          swim: 'swims',
-          power: 'strength workouts',
-          agility: 'runs',
-          endurance: 'cardio sessions'
-        };
 
         return `
           <div class="stat-card">
-            <div class="stat-header">
-              <div class="stat-name">
-                <div class="stat-icon ${statName}">${statIcons[statName]}</div>
-                ${statName}
+            <div class="stat-label">
+              <div class="stat-icon ${statName}">${statIcons[statName]}</div>
+              <div class="stat-name">${statName}</div>
+            </div>
+            <div class="stat-info">
+              <div class="stat-level-bar">
+                <div class="progress-container">
+                  <div class="progress-fill ${statName}" style="width: ${progress}%"></div>
+                </div>
+                <div class="stat-level">Lv ${statData.level}</div>
               </div>
-              <div class="stat-level">Lv ${statData.level}</div>
-            </div>
-            <div class="xp-info">
-              ${statData.xp.toLocaleString()} / ${statData.nextLevelXP.toLocaleString()} XP
-            </div>
-            <div class="progress-container">
-              <div class="progress-fill ${statName}" style="width: ${progress}%"></div>
-            </div>
-            <div class="xp-needed">
-              About <strong>${activitiesNeeded} more ${activityNames[statName]}</strong> to level up!
+              <div class="xp-info">
+                ${statData.xp.toLocaleString()} / ${statData.nextLevelXP.toLocaleString()} XP
+              </div>
             </div>
           </div>
         `;

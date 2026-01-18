@@ -20,6 +20,7 @@ database_id = "29ea15e8-d43c-447e-adc8-c2b71371c1b8"
 # Environment variables (non-sensitive)
 [vars]
 STRAVA_CLIENT_ID = "119309"
+STRAVA_WEBHOOK_VERIFY_TOKEN = "fitness_rpg_webhook_2026"
 FRONTEND_URL = "https://fitness-rpg.iancashdeveloper.workers.dev"
 
 # Build configuration for TypeScript

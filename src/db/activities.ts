@@ -111,4 +111,9 @@ export class ActivityRepository {
     await this.db.run('DELETE FROM activities WHERE user_id = ?', [userId]);
     log('Deleted all activities for user', { userId });
   }
+
+  async deleteByStravaId(stravaActivityId: string): Promise<void> {
+    await this.db.run('DELETE FROM activities WHERE strava_activity_id = ?', [stravaActivityId]);
+    log('Deleted activity by Strava ID', { stravaActivityId });
+  }
 }

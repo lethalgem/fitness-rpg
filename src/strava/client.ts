@@ -8,6 +8,34 @@ const STRAVA_API_BASE = 'https://www.strava.com/api/v3';
 export class StravaClient {
   constructor(private accessToken: string) {}
 
+  // Fetch a single activity by ID
+  async getActivity(activityId: number): Promise<StravaSummaryActivity> {
+    try {
+      log(`Fetching activity ${activityId}`);
+
+      const url = `${STRAVA_API_BASE}/activities/${activityId}`;
+
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Strava API error: ${response.status} ${error}`);
+      }
+
+      const activity = await response.json<StravaSummaryActivity>();
+      log(`Fetched activity ${activityId}`);
+
+      return activity;
+    } catch (err) {
+      logError('Failed to fetch activity', err);
+      throw err;
+    }
+  }
+
   // Fetch a single page of activities
   async getActivities(page = 1, perPage = 200, after?: number): Promise<StravaSummaryActivity[]> {
     try {

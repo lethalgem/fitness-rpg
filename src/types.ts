@@ -5,6 +5,7 @@ export interface Env {
   DB: D1Database;
   STRAVA_CLIENT_ID: string;
   STRAVA_CLIENT_SECRET: string;
+  STRAVA_WEBHOOK_VERIFY_TOKEN: string;
   FRONTEND_URL: string;
   ASSETS?: Fetcher; // For static file serving
 }

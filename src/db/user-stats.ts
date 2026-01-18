@@ -45,41 +45,42 @@ export class UserStatsRepository {
     );
 
     // Store individual stat XP values for stat-specific leaderboards
-    await this.db.transaction([
-      {
-        query: `INSERT INTO user_stats (user_id, stat_type, time_period, stat_value, total_xp, level, activities_count, updated_at)
-                VALUES (?, 'strength', ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(user_id, stat_type, time_period) DO UPDATE SET
-                  stat_value = excluded.stat_value,
-                  total_xp = excluded.total_xp,
-                  level = excluded.level,
-                  activities_count = excluded.activities_count,
-                  updated_at = excluded.updated_at`,
-        params: [userId, timePeriod, stats.strength, stats.total_xp, stats.strength_level, stats.activities_count, now]
-      },
-      {
-        query: `INSERT INTO user_stats (user_id, stat_type, time_period, stat_value, total_xp, level, activities_count, updated_at)
-                VALUES (?, 'endurance', ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(user_id, stat_type, time_period) DO UPDATE SET
-                  stat_value = excluded.stat_value,
-                  total_xp = excluded.total_xp,
-                  level = excluded.level,
-                  activities_count = excluded.activities_count,
-                  updated_at = excluded.updated_at`,
-        params: [userId, timePeriod, stats.endurance, stats.total_xp, stats.endurance_level, stats.activities_count, now]
-      },
-      {
-        query: `INSERT INTO user_stats (user_id, stat_type, time_period, stat_value, total_xp, level, activities_count, updated_at)
-                VALUES (?, 'agility', ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(user_id, stat_type, time_period) DO UPDATE SET
-                  stat_value = excluded.stat_value,
-                  total_xp = excluded.total_xp,
-                  level = excluded.level,
-                  activities_count = excluded.activities_count,
-                  updated_at = excluded.updated_at`,
-        params: [userId, timePeriod, stats.agility, stats.total_xp, stats.agility_level, stats.activities_count, now]
-      }
-    ]);
+    // Using sequential inserts instead of transaction to avoid D1 constraint timing issues
+    await this.db.run(
+      `INSERT INTO user_stats (user_id, stat_type, time_period, stat_value, total_xp, level, activities_count, updated_at)
+       VALUES (?, 'strength', ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(user_id, stat_type, time_period) DO UPDATE SET
+         stat_value = excluded.stat_value,
+         total_xp = excluded.total_xp,
+         level = excluded.level,
+         activities_count = excluded.activities_count,
+         updated_at = excluded.updated_at`,
+      [userId, timePeriod, stats.strength, stats.total_xp, stats.strength_level, stats.activities_count, now]
+    );
+
+    await this.db.run(
+      `INSERT INTO user_stats (user_id, stat_type, time_period, stat_value, total_xp, level, activities_count, updated_at)
+       VALUES (?, 'endurance', ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(user_id, stat_type, time_period) DO UPDATE SET
+         stat_value = excluded.stat_value,
+         total_xp = excluded.total_xp,
+         level = excluded.level,
+         activities_count = excluded.activities_count,
+         updated_at = excluded.updated_at`,
+      [userId, timePeriod, stats.endurance, stats.total_xp, stats.endurance_level, stats.activities_count, now]
+    );
+
+    await this.db.run(
+      `INSERT INTO user_stats (user_id, stat_type, time_period, stat_value, total_xp, level, activities_count, updated_at)
+       VALUES (?, 'agility', ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(user_id, stat_type, time_period) DO UPDATE SET
+         stat_value = excluded.stat_value,
+         total_xp = excluded.total_xp,
+         level = excluded.level,
+         activities_count = excluded.activities_count,
+         updated_at = excluded.updated_at`,
+      [userId, timePeriod, stats.agility, stats.total_xp, stats.agility_level, stats.activities_count, now]
+    );
   }
 
   // Get cached stats for a user

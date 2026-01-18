@@ -7,6 +7,7 @@ import auth from './routes/auth';
 import stats from './routes/stats';
 import friends from './routes/friends';
 import leaderboard from './routes/leaderboard';
+import webhooks from './routes/webhooks';
 import cronHandler from './cron';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -19,6 +20,7 @@ app.route('/auth', auth);
 app.route('/stats', stats);
 app.route('/friends', friends);
 app.route('/leaderboard', leaderboard);
+app.route('/webhooks', webhooks);
 
 // Health check
 app.get('/health', (c) => {

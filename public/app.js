@@ -116,8 +116,11 @@ function updateUserInfo(user) {
 
   // Set up sync button
   const syncBtn = document.getElementById('syncBtn');
+  console.log('Sync button found:', syncBtn);
   if (syncBtn) {
+    console.log('Attaching sync button click handler');
     syncBtn.onclick = async () => {
+      console.log('Sync button clicked!');
       const userId = localStorage.getItem('userId');
       if (!userId) return;
 

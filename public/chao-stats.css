@@ -13,6 +13,7 @@
   backdrop-filter: blur(10px);
   margin-bottom: 2rem;
   text-align: center;
+  position: relative;
 }
 
 .chao-character-name {
@@ -91,6 +92,34 @@
   font-weight: 700;
   color: rgba(255, 255, 255, 0.9);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.chao-sync-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  border-radius: 18px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: 'Fredoka', 'Comic Neue', sans-serif;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.chao-sync-btn:hover {
+  background: rgba(255, 255, 255, 0.45);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.chao-sync-btn:active {
+  transform: translateY(0) scale(1);
 }
 
 .chao-stats-box {
@@ -274,6 +303,21 @@
   text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
 }
 
+.chao-workout-hint {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+  font-style: italic;
+  margin-top: 0.25rem;
+  text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
+}
+
+.chao-hint-note {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
 .chao-activities-section {
   background: rgba(100, 180, 255, 0.85);
   border: 4px solid rgba(255, 255, 255, 0.6);
@@ -394,15 +438,119 @@
 }
 
 @media (max-width: 768px) {
+  .chao-header {
+    padding: 1.5rem 1rem 1.5rem 1rem;
+    padding-top: 3.5rem; /* Make room for sync button */
+  }
+
+  .chao-sync-btn {
+    top: 1rem;
+    right: 1rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 12px;
+  }
+
   .chao-character-name {
     font-size: 2rem;
   }
 
+  .chao-character-level {
+    font-size: 1.4rem;
+  }
+
+  .chao-overall-progress {
+    max-width: 100%;
+  }
+
+  .chao-overall-progress-bar {
+    height: 28px;
+  }
+
+  .chao-overall-progress-text {
+    font-size: 0.9rem;
+  }
+
+  .chao-stats-box {
+    padding: 1.5rem 1rem;
+  }
+
+  .chao-stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
   .chao-stat-label {
-    min-width: 120px;
+    min-width: auto;
+    width: 100%;
+    justify-content: center;
   }
 
   .chao-stat-name {
     font-size: 1.2rem;
+  }
+
+  .chao-stat-info {
+    width: 100%;
+  }
+
+  .chao-stat-level-bar {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  .chao-stat-level {
+    text-align: center;
+    min-width: auto;
+  }
+
+  .chao-progress-container {
+    width: 100%;
+  }
+
+  .chao-xp-info {
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .chao-workout-hint {
+    font-size: 0.75rem;
+    text-align: center;
+  }
+
+  .chao-hint-note {
+    font-size: 0.7rem;
+    display: block;
+    margin-top: 0.25rem;
+  }
+
+  .chao-activities-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .chao-activities-header {
+    font-size: 1.5rem;
+  }
+
+  .chao-activity-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+
+  .chao-activity-stats {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .chao-activity-name {
+    font-size: 1.1rem;
+  }
+
+  .chao-activity-details {
+    font-size: 0.9rem;
   }
 }

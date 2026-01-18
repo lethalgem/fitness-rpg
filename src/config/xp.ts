@@ -34,24 +34,25 @@ export const PACE_INTENSITY_THRESHOLDS = {
   veryHard: { minPace: 0, multiplier: 2.0 },      // <4 min/km
 };
 
-// Level calculation: XP needed for level N
-// Formula: level = floor(sqrt(totalXP / 1000))
-// Level 1 = 1,000 XP
-// Level 2 = 4,000 XP
-// Level 10 = 100,000 XP
-// Level 100 = 10,000,000 XP
-export const XP_PER_LEVEL_FACTOR = 1000;
+// Level calculation: Linear progression
+// Each level requires ~3,000 XP (about 3-5 workouts depending on intensity/duration)
+// Level 1 = 3,000 XP
+// Level 2 = 6,000 XP
+// Level 10 = 30,000 XP
+// Level 100 = 300,000 XP
+// Level 200 = 600,000 XP
+export const XP_PER_LEVEL_BASE = 3000;
 
 export function calculateLevel(totalXP: number): number {
-  return Math.floor(Math.sqrt(totalXP / XP_PER_LEVEL_FACTOR));
+  return Math.floor(totalXP / XP_PER_LEVEL_BASE);
 }
 
 export function xpForNextLevel(currentLevel: number): number {
-  return Math.pow(currentLevel + 1, 2) * XP_PER_LEVEL_FACTOR;
+  return (currentLevel + 1) * XP_PER_LEVEL_BASE;
 }
 
 export function xpForCurrentLevel(currentLevel: number): number {
-  return Math.pow(currentLevel, 2) * XP_PER_LEVEL_FACTOR;
+  return currentLevel * XP_PER_LEVEL_BASE;
 }
 
 // Estimated max heart rate (can be customized per user later)

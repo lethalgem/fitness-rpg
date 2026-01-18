@@ -8,14 +8,36 @@
     agility: 'A'
   };
 
-  // Calculate XP for current level (from backend formula)
+  // Best workout types for each stat (from backend config)
+  const statWorkoutRecommendations = {
+    strength: [
+      { name: 'Weight Training', contribution: 0.85 },
+      { name: 'Rock Climbing', contribution: 0.6 },
+      { name: 'Crossfit', contribution: 0.5 },
+      { name: 'Rowing', contribution: 0.5 }
+    ],
+    endurance: [
+      { name: 'Walk', contribution: 0.8 },
+      { name: 'Run', contribution: 0.7 },
+      { name: 'Elliptical', contribution: 0.7 },
+      { name: 'Ride', contribution: 0.6 }
+    ],
+    agility: [
+      { name: 'Table Tennis', contribution: 0.5 },
+      { name: 'Tennis', contribution: 0.4 },
+      { name: 'Badminton', contribution: 0.4 },
+      { name: 'Surfing', contribution: 0.4 }
+    ]
+  };
+
+  // Calculate XP for current level (from backend formula - LINEAR)
   function xpForCurrentLevel(level) {
-    return Math.pow(level, 2) * 1000;
+    return level * 3000;
   }
 
   // Calculate XP for next level
   function xpForNextLevel(level) {
-    return Math.pow(level + 1, 2) * 1000;
+    return (level + 1) * 3000;
   }
 
   // Get average XP for a stat from recent activities
@@ -37,6 +59,49 @@
   // Calculate activities needed to level up
   function calculateActivitiesNeeded(xpNeeded, avgXP) {
     return Math.ceil(xpNeeded / avgXP);
+  }
+
+  // Get personalized workout recommendations based on user's activity history
+  function getPersonalizedRecommendations(statName, activities) {
+    const recommendations = statWorkoutRecommendations[statName];
+
+    // Count how many times user has done each type (with fuzzy matching)
+    const sportCounts = {};
+    activities.forEach(activity => {
+      if (activity.sport_type) {
+        // Normalize the sport type for matching
+        const normalizedType = activity.sport_type.toLowerCase().replace(/\s+/g, '');
+        sportCounts[normalizedType] = (sportCounts[normalizedType] || 0) + 1;
+      }
+    });
+
+    // Score each recommendation by frequency
+    const scoredRecs = recommendations.map(rec => {
+      const normalizedRec = rec.name.toLowerCase().replace(/\s+/g, '');
+      let count = 0;
+
+      // Check for fuzzy matches in sport types
+      for (const [sportType, freq] of Object.entries(sportCounts)) {
+        if (sportType.includes(normalizedRec) || normalizedRec.includes(sportType)) {
+          count += freq;
+        }
+      }
+
+      return {
+        name: rec.name,
+        count: count,
+        contribution: rec.contribution
+      };
+    });
+
+    // Sort by count (workouts they've done most), then by contribution
+    scoredRecs.sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return b.contribution - a.contribution;
+    });
+
+    // Return top 3 names only
+    return scoredRecs.slice(0, 3).map(rec => rec.name);
   }
 
   // Render stat card with segmented progress
@@ -83,6 +148,10 @@
 
     const remainingSegments = segments.filter(s => s.fillClass !== 'filled').length;
 
+    // Get personalized workout recommendations
+    const recommendations = getPersonalizedRecommendations(statName, activities);
+    const workoutText = recommendations.join(', ');
+
     return `
       <div class="chao-stat-card">
         <div class="chao-stat-label">
@@ -97,7 +166,10 @@
             <div class="chao-stat-level">Lv ${statData.level}</div>
           </div>
           <div class="chao-xp-info">
-            ${remainingSegments} ${remainingSegments === 1 ? 'workout' : 'workouts'} to level up • ${statData.xp.toLocaleString()} / ${nextLevelXP.toLocaleString()} XP
+            ~${activitiesNeeded} ${activitiesNeeded === 1 ? 'workout' : 'workouts'} to level up • ${xpNeeded.toLocaleString()} XP needed
+          </div>
+          <div class="chao-workout-hint">
+            Best for leveling: ${workoutText} <span class="chao-hint-note">(based on your recent activities)</span>
           </div>
         </div>
       </div>

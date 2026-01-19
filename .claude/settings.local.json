@@ -14,7 +14,8 @@
       "Bash(timeout /t 10)",
       "Bash(Start-Sleep -Seconds 30)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nDocument stat system design decision for racing minigame\n\n- Added comprehensive stat system analysis to /plans/stat-system-analysis.md\n- Decision: Keep 3-stat system \\(Strength/Endurance/Agility\\) unchanged\n- 79 Strava activities well-mapped with validated distributions\n- System designed with future Chao Garden-style racing in mind\n- Updated CLAUDE.md with stat philosophy and racing concepts\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nDocument stat system design decision for racing minigame\n\n- Added comprehensive stat system analysis to /plans/stat-system-analysis.md\n- Decision: Keep 3-stat system \\(Strength/Endurance/Agility\\) unchanged\n- 79 Strava activities well-mapped with validated distributions\n- System designed with future Chao Garden-style racing in mind\n- Updated CLAUDE.md with stat philosophy and racing concepts\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(python:*)"
     ]
   }
 }

@@ -170,12 +170,13 @@ leaderboard.get('/sports', async (c) => {
   }
 });
 
-// GET /leaderboard/me/:userId?type=level
+// GET /leaderboard/me/:userId?type=level&period=all_time
 // Get current user's rank in leaderboard
 leaderboard.get('/me/:userId', async (c) => {
   try {
     const userId = parseInt(c.req.param('userId'));
     const type = c.req.query('type') || 'level';
+    const period = c.req.query('period') || 'all_time';
 
     if (isNaN(userId)) {
       return error('Invalid user ID');
@@ -188,19 +189,19 @@ leaderboard.get('/me/:userId', async (c) => {
 
     switch (type) {
       case 'level':
-        rankData = await statsRepo.getUserLevelRank(userId);
+        rankData = await statsRepo.getUserLevelRank(userId, period);
         break;
       case 'strength':
-        rankData = await statsRepo.getUserStatRank(userId, 'strength');
+        rankData = await statsRepo.getUserStatRank(userId, 'strength', period);
         break;
       case 'endurance':
-        rankData = await statsRepo.getUserStatRank(userId, 'endurance');
+        rankData = await statsRepo.getUserStatRank(userId, 'endurance', period);
         break;
       case 'agility':
-        rankData = await statsRepo.getUserStatRank(userId, 'agility');
+        rankData = await statsRepo.getUserStatRank(userId, 'agility', period);
         break;
       case 'activities':
-        rankData = await statsRepo.getUserActivityRank(userId);
+        rankData = await statsRepo.getUserActivityRank(userId, period);
         break;
       default:
         return error('Invalid rank type. Use: level, strength, endurance, agility, activities');
@@ -210,11 +211,12 @@ leaderboard.get('/me/:userId', async (c) => {
       return error('User stats not found. Stats may not be cached yet.');
     }
 
-    log('Fetched user rank', { userId, type, rank: rankData.rank });
+    log('Fetched user rank', { userId, type, period, rank: rankData.rank });
 
     return success({
       rank: rankData.rank,
       type,
+      period,
       level: rankData.level,
       total_xp: rankData.total_xp,
       stat_value: rankData.stat_value,

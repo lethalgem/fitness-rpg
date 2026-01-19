@@ -1516,6 +1516,34 @@ footer a {
   font-weight: 600;
 }
 
+.gap-info {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 8px;
+  margin-right: 0.5rem;
+}
+
+.gap-info.behind {
+  color: #FF6B6B;
+  background: rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.gap-info.ahead {
+  color: #51CF66;
+  background: rgba(81, 207, 102, 0.2);
+  border: 1px solid rgba(81, 207, 102, 0.3);
+}
+
+.gap-info.leading {
+  color: #FFD700;
+  background: rgba(255, 215, 0, 0.25);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+}
+
 .entry-level {
   font-size: 1.4rem;
   font-weight: 700;

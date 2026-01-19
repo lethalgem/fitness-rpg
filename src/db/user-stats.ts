@@ -171,20 +171,23 @@ export class UserStatsRepository {
   }
 
   // Get user's rank by level
-  async getUserLevelRank(userId: number): Promise<UserRank | null> {
+  async getUserLevelRank(userId: number, timePeriod: string = 'all_time'): Promise<UserRank | null> {
     const result = await this.db.first<{ rank: number }>(
       `SELECT COUNT(*) + 1 as rank
        FROM user_stats us1
-       WHERE us1.stat_type = 'overall'
-         AND (us1.level > (SELECT level FROM user_stats WHERE user_id = ? AND stat_type = 'overall')
-              OR (us1.level = (SELECT level FROM user_stats WHERE user_id = ? AND stat_type = 'overall')
-                  AND us1.total_xp > (SELECT total_xp FROM user_stats WHERE user_id = ? AND stat_type = 'overall')))`,
-      [userId, userId, userId]
+       WHERE us1.stat_type = 'overall' AND us1.time_period = ?
+         AND (us1.level > (SELECT level FROM user_stats WHERE user_id = ? AND stat_type = 'overall' AND time_period = ?)
+              OR (us1.level = (SELECT level FROM user_stats WHERE user_id = ? AND stat_type = 'overall' AND time_period = ?)
+                  AND us1.total_xp > (SELECT total_xp FROM user_stats WHERE user_id = ? AND stat_type = 'overall' AND time_period = ?)))`,
+      [timePeriod, userId, timePeriod, userId, timePeriod, userId, timePeriod]
     );
 
     if (!result) return null;
 
-    const stats = await this.getUserStats(userId, 'overall');
+    const stats = await this.db.first<UserStats>(
+      `SELECT * FROM user_stats WHERE user_id = ? AND stat_type = 'overall' AND time_period = ?`,
+      [userId, timePeriod]
+    );
     if (!stats) return null;
 
     return {
@@ -198,20 +201,23 @@ export class UserStatsRepository {
   }
 
   // Get user's rank by specific stat
-  async getUserStatRank(userId: number, statType: 'strength' | 'endurance' | 'agility'): Promise<UserRank | null> {
+  async getUserStatRank(userId: number, statType: 'strength' | 'endurance' | 'agility', timePeriod: string = 'all_time'): Promise<UserRank | null> {
     const result = await this.db.first<{ rank: number }>(
       `SELECT COUNT(*) + 1 as rank
        FROM user_stats us1
-       WHERE us1.stat_type = ?
-         AND (us1.level > (SELECT level FROM user_stats WHERE user_id = ? AND stat_type = ?)
-              OR (us1.level = (SELECT level FROM user_stats WHERE user_id = ? AND stat_type = ?)
-                  AND us1.stat_value > (SELECT stat_value FROM user_stats WHERE user_id = ? AND stat_type = ?)))`,
-      [statType, userId, statType, userId, statType, userId, statType]
+       WHERE us1.stat_type = ? AND us1.time_period = ?
+         AND (us1.level > (SELECT level FROM user_stats WHERE user_id = ? AND stat_type = ? AND time_period = ?)
+              OR (us1.level = (SELECT level FROM user_stats WHERE user_id = ? AND stat_type = ? AND time_period = ?)
+                  AND us1.stat_value > (SELECT stat_value FROM user_stats WHERE user_id = ? AND stat_type = ? AND time_period = ?)))`,
+      [statType, timePeriod, userId, statType, timePeriod, userId, statType, timePeriod, userId, statType, timePeriod]
     );
 
     if (!result) return null;
 
-    const stats = await this.getUserStats(userId, statType);
+    const stats = await this.db.first<UserStats>(
+      `SELECT * FROM user_stats WHERE user_id = ? AND stat_type = ? AND time_period = ?`,
+      [userId, statType, timePeriod]
+    );
     if (!stats) return null;
 
     return {
@@ -225,20 +231,23 @@ export class UserStatsRepository {
   }
 
   // Get user's rank by activity count
-  async getUserActivityRank(userId: number): Promise<UserRank | null> {
+  async getUserActivityRank(userId: number, timePeriod: string = 'all_time'): Promise<UserRank | null> {
     const result = await this.db.first<{ rank: number }>(
       `SELECT COUNT(*) + 1 as rank
        FROM user_stats us1
-       WHERE us1.stat_type = 'overall'
-         AND (us1.activities_count > (SELECT activities_count FROM user_stats WHERE user_id = ? AND stat_type = 'overall')
-              OR (us1.activities_count = (SELECT activities_count FROM user_stats WHERE user_id = ? AND stat_type = 'overall')
-                  AND us1.level > (SELECT level FROM user_stats WHERE user_id = ? AND stat_type = 'overall')))`,
-      [userId, userId, userId]
+       WHERE us1.stat_type = 'overall' AND us1.time_period = ?
+         AND (us1.activities_count > (SELECT activities_count FROM user_stats WHERE user_id = ? AND stat_type = 'overall' AND time_period = ?)
+              OR (us1.activities_count = (SELECT activities_count FROM user_stats WHERE user_id = ? AND stat_type = 'overall' AND time_period = ?)
+                  AND us1.level > (SELECT level FROM user_stats WHERE user_id = ? AND stat_type = 'overall' AND time_period = ?)))`,
+      [timePeriod, userId, timePeriod, userId, timePeriod, userId, timePeriod]
     );
 
     if (!result) return null;
 
-    const stats = await this.getUserStats(userId, 'overall');
+    const stats = await this.db.first<UserStats>(
+      `SELECT * FROM user_stats WHERE user_id = ? AND stat_type = 'overall' AND time_period = ?`,
+      [userId, timePeriod]
+    );
     if (!stats) return null;
 
     return {

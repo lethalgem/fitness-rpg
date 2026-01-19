@@ -37,12 +37,15 @@ export class ActivityRepository {
   }
 
   async findByUserIdSince(userId: number, sinceTimestamp: number, limit: number = 10000): Promise<Activity[]> {
+    // Convert Unix timestamp to ISO 8601 string for direct comparison
+    // SQLite can compare ISO 8601 strings directly
+    const sinceDate = new Date(sinceTimestamp * 1000).toISOString();
     return this.db.all<Activity>(
       `SELECT * FROM activities
-       WHERE user_id = ? AND strftime('%s', start_date) >= ?
+       WHERE user_id = ? AND start_date >= ?
        ORDER BY start_date DESC
        LIMIT ?`,
-      [userId, sinceTimestamp, limit]
+      [userId, sinceDate, limit]
     );
   }
 

@@ -1075,6 +1075,11 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
           </div>
         `;
       } else {
+        // For stat-specific leaderboards, show stat value instead of total XP
+        const isStatLeaderboard = ['strength', 'endurance', 'agility'].includes(type);
+        const xpValue = isStatLeaderboard ? userRankData.stat_value : userRankData.total_xp;
+        const xpLabel = timePeriod === 'weekly' ? 'XP (This Week)' : 'XP';
+
         userRanking.innerHTML = `
           <div class="rank-display">
             <div class="rank-number">#${userRankData.rank}</div>
@@ -1084,8 +1089,8 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
                 <span class="rank-value">${userRankData.level}</span>
               </div>
               <div class="rank-stat">
-                <span class="rank-label">XP:</span>
-                <span class="rank-value">${userRankData.total_xp.toLocaleString()}</span>
+                <span class="rank-label">${xpLabel}:</span>
+                <span class="rank-value">${Math.round(xpValue).toLocaleString()}</span>
               </div>
               <div class="rank-stat">
                 <span class="rank-label">Activities:</span>
@@ -1105,7 +1110,7 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
       return;
     }
 
-    leaderboardList.innerHTML = leaderboardData.map(entry => {
+    leaderboardList.innerHTML = leaderboardData.map((entry, index) => {
       const isCurrentUser = entry.user_id === parseInt(userId);
       const rankBadge = getRankBadge(entry.rank);
       const displayName = entry.name || 'Unknown User';
@@ -1127,7 +1132,30 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
             </div>
           </div>
         `;
+      } else if (timePeriod === 'weekly') {
+        // Weekly leaderboard format - simple and clean
+        // For stat-specific leaderboards, show the stat value instead of total XP
+        const isStatLeaderboard = ['strength', 'endurance', 'agility'].includes(type);
+        const xpValue = isStatLeaderboard ? entry.stat_value : entry.total_xp;
+
+        return `
+          <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''}">
+            <div class="entry-rank">${rankBadge}</div>
+            <div class="entry-avatar">
+              ${entry.profile_url ?
+                `<img src="${entry.profile_url}" alt="${displayName}">` :
+                '<div class="avatar-placeholder">👤</div>'}
+            </div>
+            <div class="entry-info">
+              <div class="entry-name">${displayName}</div>
+              <div class="entry-stats">
+                ${Math.round(xpValue).toLocaleString()} XP this week · ${entry.activities_count} activities
+              </div>
+            </div>
+          </div>
+        `;
       } else {
+        // All-time leaderboard format
         return `
           <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''}">
             <div class="entry-rank">${rankBadge}</div>

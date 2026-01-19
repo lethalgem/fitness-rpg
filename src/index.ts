@@ -49,6 +49,66 @@ app.get('/cron/cache-stats', async (c) => {
   return c.json({ success: true, message: 'Stats cache update started in background' });
 });
 
+// Debug endpoint to check weekly activities for a user
+app.get('/debug/weekly-activities/:userId', async (c) => {
+  try {
+    const userId = parseInt(c.req.param('userId'));
+    if (isNaN(userId)) {
+      return c.json({ error: 'Invalid user ID' }, 400);
+    }
+
+    const { createDbClient } = await import('./db/client');
+    const { ActivityRepository } = await import('./db/activities');
+    const { calculateUserStats } = await import('./stats/calculator');
+
+    const dbClient = createDbClient(c.env);
+    const activityRepo = new ActivityRepository(dbClient);
+
+    // Calculate 7 days ago
+    const now = Math.floor(Date.now() / 1000);
+    const sevenDaysAgo = now - (7 * 24 * 60 * 60);
+
+    // Fetch weekly activities
+    const weeklyActivities = await activityRepo.findByUserIdSince(userId, sevenDaysAgo, 10000);
+    const allActivities = await activityRepo.findByUserId(userId, 10000);
+
+    // Calculate stats
+    const weeklyStats = calculateUserStats(weeklyActivities);
+    const allTimeStats = calculateUserStats(allActivities);
+
+    return c.json({
+      now: new Date(now * 1000).toISOString(),
+      sevenDaysAgo: new Date(sevenDaysAgo * 1000).toISOString(),
+      weeklyActivitiesCount: weeklyActivities.length,
+      allTimeActivitiesCount: allActivities.length,
+      weeklyActivities: weeklyActivities.map(a => ({
+        id: a.id,
+        sport_type: a.sport_type,
+        name: a.name,
+        start_date: a.start_date,
+        moving_time: a.moving_time
+      })),
+      weeklyStats: {
+        total_xp: weeklyStats.total_xp,
+        strength: weeklyStats.strength,
+        endurance: weeklyStats.endurance,
+        agility: weeklyStats.agility,
+        activities_count: weeklyStats.activities_count
+      },
+      allTimeStats: {
+        total_xp: allTimeStats.total_xp,
+        strength: allTimeStats.strength,
+        endurance: allTimeStats.endurance,
+        agility: allTimeStats.agility,
+        activities_count: allTimeStats.activities_count
+      }
+    });
+  } catch (err) {
+    console.error('Debug endpoint failed', err);
+    return c.json({ error: 'Failed to fetch debug info', details: String(err) }, 500);
+  }
+});
+
 // Dismiss import job completion message
 app.post('/dismiss-job/:userId/:jobId', async (c) => {
   try {

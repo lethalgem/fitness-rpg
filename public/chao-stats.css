@@ -296,6 +296,35 @@
   }
 }
 
+/* Segment mode-specific styling */
+.chao-progress-container.milestone-mode .chao-progress-segment {
+  min-width: 60px;
+  border-width: 3px;
+}
+
+.chao-progress-container.grouped-mode .chao-progress-segment {
+  min-width: 40px;
+}
+
+.chao-progress-container.one-to-one-mode .chao-progress-segment {
+  min-width: 30px;
+}
+
+/* Next-to-fill animation */
+.chao-progress-segment.next-to-fill {
+  animation: pulse-next 2s ease-in-out infinite;
+}
+
+@keyframes pulse-next {
+  0%, 100% {
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+  }
+}
+
 .chao-xp-info {
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.85);
@@ -507,6 +536,32 @@
 
   .chao-progress-container {
     width: 100%;
+  }
+
+  /* Mobile-specific segment sizing */
+  .chao-progress-segments {
+    gap: 3px; /* Reduce gap on mobile */
+  }
+
+  .chao-progress-segment {
+    min-width: 0; /* Remove min-width constraint */
+    height: 24px; /* Slightly smaller height */
+  }
+
+  .chao-progress-container.one-to-one-mode .chao-progress-segment {
+    min-width: 0; /* Override desktop min-width */
+    flex: 1; /* Equal distribution */
+  }
+
+  .chao-progress-container.grouped-mode .chao-progress-segment {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .chao-progress-container.milestone-mode .chao-progress-segment {
+    min-width: 0;
+    flex: 1;
+    border-width: 2px; /* Thinner borders on mobile */
   }
 
   .chao-xp-info {

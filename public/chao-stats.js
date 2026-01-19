@@ -115,38 +115,107 @@
     const avgXP = getAverageXPForStat(activities, statName);
     const activitiesNeeded = calculateActivitiesNeeded(xpNeeded, avgXP);
 
-    // Create segments (5-10 based on activities needed)
-    const numSegments = Math.min(Math.max(activitiesNeeded, 5), 10);
+    // Smart segmentation based on workouts needed
+    let numSegments;
+    let segmentMode;
+
+    if (activitiesNeeded <= 10) {
+      // Mode 1: Fixed 10 segments (always consistent for visual clarity)
+      numSegments = 10;
+      segmentMode = 'one-to-one';
+    } else if (activitiesNeeded <= 25) {
+      // Mode 2: Grouped (always 10 segments)
+      numSegments = 10;
+      segmentMode = 'grouped';
+    } else {
+      // Mode 3: Milestones (5 big segments)
+      numSegments = 5;
+      segmentMode = 'milestone';
+    }
 
     // Calculate segment fill states
     const segments = [];
-    for (let i = 0; i < numSegments; i++) {
-      const segmentStartXP = (i / numSegments) * totalLevelXP;
-      const segmentEndXP = ((i + 1) / numSegments) * totalLevelXP;
 
-      let fillClass = '';
-      let fillPercent = 0;
+    if (segmentMode === 'one-to-one') {
+      // Special logic for one-to-one: fill based on workouts remaining
+      const filledSegments = Math.max(0, 10 - activitiesNeeded);
 
-      if (earnedInLevel >= segmentEndXP) {
-        fillClass = 'filled';
-        fillPercent = 100;
-      } else if (earnedInLevel > segmentStartXP) {
-        fillClass = 'partial';
-        fillPercent = ((earnedInLevel - segmentStartXP) / (segmentEndXP - segmentStartXP)) * 100;
+      for (let i = 0; i < 10; i++) {
+        let fillClass = '';
+        let fillPercent = 0;
+
+        if (i < filledSegments) {
+          // Already completed segments
+          fillClass = 'filled';
+          fillPercent = 100;
+        } else if (i === filledSegments && earnedInLevel > 0) {
+          // Current segment in progress
+          // Calculate progress within this segment
+          const segmentStartXP = (filledSegments / 10) * totalLevelXP;
+          const segmentEndXP = ((filledSegments + 1) / 10) * totalLevelXP;
+          const segmentXP = segmentEndXP - segmentStartXP;
+          const xpInSegment = earnedInLevel - segmentStartXP;
+
+          fillClass = 'partial';
+          fillPercent = Math.min(100, (xpInSegment / segmentXP) * 100);
+        }
+        // else: empty segment (no class)
+
+        segments.push({ fillClass, fillPercent });
       }
+    } else {
+      // Original XP-based logic for grouped and milestone modes
+      for (let i = 0; i < numSegments; i++) {
+        const segmentStartXP = (i / numSegments) * totalLevelXP;
+        const segmentEndXP = ((i + 1) / numSegments) * totalLevelXP;
 
-      segments.push({ fillClass, fillPercent });
+        let fillClass = '';
+        let fillPercent = 0;
+
+        if (earnedInLevel >= segmentEndXP) {
+          fillClass = 'filled';
+          fillPercent = 100;
+        } else if (earnedInLevel > segmentStartXP) {
+          fillClass = 'partial';
+          fillPercent = ((earnedInLevel - segmentStartXP) / (segmentEndXP - segmentStartXP)) * 100;
+        }
+
+        segments.push({ fillClass, fillPercent });
+      }
     }
 
-    const segmentsHTML = segments.map(seg => `
-      <div class="chao-progress-segment ${seg.fillClass}">
-        ${seg.fillPercent > 0 ? `
-          <div class="chao-progress-segment-fill ${statName}" style="transform: scaleX(${seg.fillPercent / 100})"></div>
-        ` : ''}
-      </div>
-    `).join('');
+    const segmentsHTML = segments.map((seg, index) => {
+      const isNext = seg.fillClass === '' && index > 0 && segments[index - 1].fillClass === 'filled';
+      const isFirstEmpty = seg.fillClass === '' && index === 0;
+      const shouldHighlight = isNext || (isFirstEmpty && !segments.some(s => s.fillClass === 'filled'));
+
+      return `
+        <div class="chao-progress-segment ${seg.fillClass} ${shouldHighlight ? 'next-to-fill' : ''}">
+          ${seg.fillPercent > 0 ? `
+            <div class="chao-progress-segment-fill ${statName}" style="transform: scaleX(${seg.fillPercent / 100})"></div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
 
     const remainingSegments = segments.filter(s => s.fillClass !== 'filled').length;
+
+    // Calculate workouts per segment for grouped/milestone modes
+    const workoutsPerSegment = Math.ceil(activitiesNeeded / numSegments);
+
+    // Build context-aware text
+    let progressContext = '';
+    if (segmentMode === 'grouped') {
+      progressContext = ` • ~${workoutsPerSegment} per segment`;
+    } else if (segmentMode === 'milestone') {
+      // Calculate which segment they're working on
+      const currentSegmentIndex = Math.floor((earnedInLevel / totalLevelXP) * numSegments);
+      const segmentStartXP = (currentSegmentIndex / numSegments) * totalLevelXP;
+      const xpInCurrentSegment = earnedInLevel - segmentStartXP;
+      const workoutsInSegment = Math.floor(xpInCurrentSegment / avgXP);
+
+      progressContext = ` • Milestone ${currentSegmentIndex + 1}/5: ${workoutsInSegment}/${workoutsPerSegment} workouts`;
+    }
 
     // Get personalized workout recommendations
     const recommendations = getPersonalizedRecommendations(statName, activities);
@@ -160,13 +229,13 @@
         </div>
         <div class="chao-stat-info">
           <div class="chao-stat-level-bar">
-            <div class="chao-progress-container">
+            <div class="chao-progress-container ${segmentMode}-mode">
               ${segmentsHTML}
             </div>
             <div class="chao-stat-level">Lv ${statData.level}</div>
           </div>
           <div class="chao-xp-info">
-            ~${activitiesNeeded} ${activitiesNeeded === 1 ? 'workout' : 'workouts'} to level up • ${xpNeeded.toLocaleString()} XP needed
+            ~${activitiesNeeded} ${activitiesNeeded === 1 ? 'workout' : 'workouts'} to level up • ${xpNeeded.toLocaleString()} XP needed${progressContext}
           </div>
           <div class="chao-workout-hint">
             Best for leveling: ${workoutText} <span class="chao-hint-note">(based on your recent activities)</span>

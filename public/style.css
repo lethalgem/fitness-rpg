@@ -1087,10 +1087,46 @@ footer a {
 
 /* Responsive */
 @media (max-width: 768px) {
+  /* General */
   header h1 {
     font-size: 2rem;
   }
 
+  .card {
+    padding: 1.5rem 1rem;
+  }
+
+  /* Welcome Screen */
+  .welcome-card {
+    padding: 2rem 1.5rem;
+    max-width: 100%;
+    margin: 0 1rem;
+  }
+
+  .welcome-card h2 {
+    font-size: 1.75rem;
+  }
+
+  .welcome-card .description {
+    font-size: 1rem;
+  }
+
+  /* Tabs */
+  .tabs {
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .tab-btn {
+    font-size: 0.85rem;
+    padding: 0.65rem 0.75rem;
+    flex: 1;
+    white-space: nowrap;
+    border-radius: 16px;
+    border-width: 2px;
+  }
+
+  /* Stats Grid */
   .radar-card {
     grid-column: span 1;
   }
@@ -1123,6 +1159,69 @@ footer a {
     flex-direction: column;
     gap: 0.75rem;
     align-items: flex-start;
+  }
+
+  /* Friends Tab */
+  .friend-search h3,
+  .friends-list h3 {
+    font-size: 1.5rem;
+  }
+
+  .search-container {
+    flex-direction: column;
+  }
+
+  .search-input {
+    font-size: 0.95rem;
+  }
+
+  .friend-item {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .friend-info {
+    align-items: center;
+  }
+
+  .friend-actions {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.75rem;
+  }
+
+  /* Leaderboards */
+  .leaderboard-controls h3 {
+    font-size: 1.5rem;
+  }
+
+  .period-selector {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .period-btn {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 120px;
+    font-size: 0.85rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .category-selector {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .category-selector label {
+    font-size: 0.9rem;
+  }
+
+  .category-selector select {
+    font-size: 0.9rem;
+    width: 100%;
   }
 }
 
@@ -1428,22 +1527,32 @@ footer a {
 
 /* Responsive leaderboards */
 @media (max-width: 768px) {
-  .category-selector {
-    flex-direction: column;
+  .leaderboard-entry {
+    padding: 0.75rem;
   }
 
   .rank-display {
-    flex-direction: column;
-    text-align: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
 
   .rank-details {
+    flex: 1 1 100%;
+    order: 2;
     justify-content: center;
   }
 
   .entry-rank {
     min-width: 40px;
     font-size: 1.25rem;
+    order: 1;
+  }
+
+  .entry-level {
+    min-width: 50px;
+    font-size: 1.1rem;
+    order: 3;
   }
 
   .entry-avatar {
@@ -1452,11 +1561,18 @@ footer a {
   }
 
   .entry-name {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
-  .entry-level {
-    min-width: 50px;
-    font-size: 1.1rem;
+  .entry-username {
+    font-size: 0.8rem;
+  }
+
+  .stat-value {
+    font-size: 0.9rem;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
   }
 }

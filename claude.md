@@ -123,9 +123,32 @@ Tracking via `rate_limits` table with automatic cleanup.
 
 Stats are calculated from activities based on sport type mappings in `stats/config.ts`:
 
-- Different sports contribute to different stats
-- XP system with level progression
+- **79 Strava activity types** mapped to 3 core stats
+- Different sports contribute to different stats with percentage distributions
+- XP system with linear level progression (3,000 XP per level)
 - Cached for performance, recalculated on activity changes
+
+#### The 3-Stat System (INTENTIONAL DESIGN DECISION)
+
+**Why 3 stats?**
+The system uses Strength, Endurance, and Agility specifically to:
+1. **Keep it simple**: Easy to understand and strategize
+2. **Clear fitness goals**: Each stat maps to obvious workout categories
+3. **Support specialization**: Users can build distinct athlete profiles
+4. **Enable future racing**: Sufficient for Chao Garden-style racing minigames
+
+**Stat Mappings Philosophy**:
+- **Strength** (Power): Weight training, climbing, resistance activities
+- **Endurance** (Stamina): Running, cycling, swimming, sustained cardio
+- **Agility** (Skill): Ball sports, HIIT, activities requiring directional changes
+
+**Coverage**: All 79 Strava activities are thoughtfully mapped with validated percentage distributions. Examples:
+- Run: 10% strength, 70% endurance, 20% agility
+- WeightTraining: 85% strength, 10% endurance, 5% agility
+- Tennis: 30% strength, 30% endurance, 40% agility
+- Swim: 40% strength, 50% endurance, 10% agility
+
+**Do NOT expand to more stats** without explicit discussion. The 3-stat system was chosen after analysis of racing minigame requirements and fitness motivation clarity. See `/plans/stat-system-analysis.md` for full reasoning.
 
 ## Important Implementation Details
 
@@ -237,9 +260,38 @@ Frontend is served from `public/` directory via Cloudflare Workers Assets bindin
 
 ## Recent Changes
 
+- **2026-01-19**: Fixed progress bar segmentation for better UX motivation
+  - One-to-one mode (1-10 workouts) now always shows 10 segments
+  - Filled segments = progress made, empty segments = workouts remaining
+  - Mobile responsive with flexible segment sizing
+- **2026-01-19**: Completed stat system analysis for future racing minigame
+  - Decided to keep 3-stat system (Strength/Endurance/Agility)
+  - Documented design rationale in `/plans/stat-system-analysis.md`
+  - Updated CLAUDE.md with stat system philosophy
 - **2026-01-17**: Implemented Strava webhook integration for real-time activity updates
 - **2026-01-17**: Fixed user_stats UNIQUE constraint issue (added time_period to constraint)
 - **2026-01-17**: Created force-sync-all-users script for one-time bulk syncing
+
+## Future Features
+
+### Racing Minigame (Planned - Chao Garden Style)
+
+**Inspiration**: Sonic Adventure 2 Chao Garden races
+**Status**: Stat system designed with racing in mind - ready for implementation
+
+**Race Design Concepts**:
+- **Marathon Races**: Long straightaways testing Endurance
+- **Obstacle Courses**: Walls, barriers, climbing testing Strength
+- **Technical Circuits**: Tight corners, zigzags testing Agility
+- **Triathlons**: Mixed segments rewarding balanced builds
+
+**Mechanics**:
+- Stats influence race performance in specific segments
+- Specialization bonuses (e.g., 2x one stat = specialist boost)
+- All-rounder bonuses for balanced stats
+- Cosmetic Chao customization based on stat builds
+
+**Design Philosophy**: The 3-stat system (Strength/Endurance/Agility) is sufficient for engaging races. Do not expand stats without re-reading the analysis in `/plans/stat-system-analysis.md`.
 
 ## Known Issues & Future Improvements
 

@@ -361,7 +361,7 @@ function updateSportBreakdown(breakdown) {
 
   sportList.innerHTML = topSports.map(sport => {
     const hours = (sport.total_time / 60).toFixed(1);
-    const miles = (sport.total_distance / 1000 * 0.621371).toFixed(1);
+    const miles = (sport.total_distance / 1609.34).toFixed(1);
 
     // Calculate which stat this activity contributes to most
     const strengthPercent = (sport.strength_xp / sport.total_xp * 100).toFixed(0);
@@ -421,7 +421,7 @@ async function loadRecentActivities(userId, limit = 10) {
       const date = new Date(activity.start_date_local || activity.start_date);
       const timeAgo = getTimeAgo(date);
       const hours = ((activity.moving_time || activity.elapsed_time || 0) / 3600).toFixed(1);
-      const miles = ((activity.distance || 0) / 1000 * 0.621371).toFixed(1);
+      const miles = ((activity.distance || 0) / 1609.34).toFixed(1);
 
       // Get intensity indicator
       let intensityBadge = '';
@@ -1080,14 +1080,19 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
         const xpValue = isStatLeaderboard ? userRankData.stat_value : userRankData.total_xp;
         const xpLabel = timePeriod === 'weekly' ? 'XP (This Week)' : 'XP';
 
+        // For weekly leaderboards, hide level (it's meaningless for short periods)
+        const levelStat = timePeriod === 'weekly' ? '' : `
+          <div class="rank-stat">
+            <span class="rank-label">Level:</span>
+            <span class="rank-value">${userRankData.level}</span>
+          </div>
+        `;
+
         userRanking.innerHTML = `
           <div class="rank-display">
             <div class="rank-number">#${userRankData.rank}</div>
             <div class="rank-details">
-              <div class="rank-stat">
-                <span class="rank-label">Level:</span>
-                <span class="rank-value">${userRankData.level}</span>
-              </div>
+              ${levelStat}
               <div class="rank-stat">
                 <span class="rank-label">${xpLabel}:</span>
                 <span class="rank-value">${Math.round(xpValue).toLocaleString()}</span>
@@ -1232,9 +1237,9 @@ function getRankBadge(rank) {
 }
 
 function formatDistance(meters) {
-  if (!meters) return '0 km';
-  const km = meters / 1000;
-  return km.toFixed(1) + ' km';
+  if (!meters) return '0 mi';
+  const miles = meters / 1609.34; // 1 mile = 1609.34 meters
+  return miles.toFixed(1) + ' mi';
 }
 
 function formatTime(seconds) {

@@ -252,7 +252,7 @@
     }
 
     return activities.slice(0, 10).map(activity => {
-      const distance = activity.distance ? `${(activity.distance / 1000).toFixed(1)} km` : '';
+      const distance = activity.distance ? `${(activity.distance / 1609.34).toFixed(1)} mi` : '';
       const time = activity.elapsed_time ? formatTime(activity.elapsed_time) : '';
       const details = [distance, time].filter(Boolean).join(' • ');
 

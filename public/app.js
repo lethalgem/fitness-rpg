@@ -950,7 +950,7 @@ function createComparisonChart(userStats, friendStats) {
 
 let currentLeaderboardType = 'level';
 let currentSportType = null;
-let currentTimePeriod = 'all_time';
+let currentTimePeriod = 'weekly';
 
 async function loadLeaderboardsTab() {
   const userId = localStorage.getItem('userId');
@@ -965,6 +965,7 @@ async function loadLeaderboardsTab() {
       currentSportType = null;
       document.getElementById('sportFilterCard').style.display = 'none';
       loadLeaderboard(userId, currentLeaderboardType, null, currentTimePeriod);
+      updateResetBanner(currentTimePeriod); // Update reset banner when period changes
     };
   });
 
@@ -991,8 +992,9 @@ async function loadLeaderboardsTab() {
     loadLeaderboard(userId, currentLeaderboardType, null, currentTimePeriod);
   };
 
-  // Load initial leaderboard
+  // Load initial leaderboard and reset banner
   await loadLeaderboard(userId, currentLeaderboardType, null, currentTimePeriod);
+  await updateResetBanner(currentTimePeriod);
 }
 
 async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all_time') {
@@ -1250,4 +1252,48 @@ function formatTime(seconds) {
     return `${hours}h ${minutes}m`;
   }
   return `${minutes}m`;
+}
+
+// Update the weekly reset banner
+async function updateResetBanner(timePeriod) {
+  const resetBanner = document.getElementById('weeklyResetBanner');
+
+  if (timePeriod !== 'weekly') {
+    resetBanner.style.display = 'none';
+    return;
+  }
+
+  try {
+    const response = await fetch('/leaderboard/reset-info');
+    const data = await response.json();
+
+    if (data.success) {
+      const timeUntilReset = data.data.time_until_reset;
+      const nextResetDate = new Date(data.data.next_reset_iso);
+
+      // Format local time for user
+      const localResetTime = nextResetDate.toLocaleString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      });
+
+      resetBanner.style.display = 'block';
+      resetBanner.innerHTML = `
+        <div class="reset-banner">
+          <span class="reset-icon">⏰</span>
+          <div class="reset-text">
+            <div class="reset-title">Weekly Leaderboard Resets Every Monday</div>
+            <div class="reset-countdown">Next reset: ${timeUntilReset} (${localResetTime})</div>
+          </div>
+        </div>
+      `;
+    }
+  } catch (err) {
+    console.error('Failed to fetch reset info', err);
+    resetBanner.style.display = 'none';
+  }
 }

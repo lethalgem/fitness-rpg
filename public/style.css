@@ -1604,3 +1604,73 @@ footer a {
     font-size: 0.7rem;
   }
 }
+
+/* Weekly Reset Banner */
+.weekly-reset-banner {
+  background: linear-gradient(135deg, #E8F4F8 0%, #D4EEFF 100%);
+  border: 3px solid rgba(168, 216, 240, 0.8);
+  border-radius: 20px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  animation: float 3s ease-in-out infinite;
+}
+
+.reset-banner {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.reset-icon {
+  font-size: 32px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.reset-text {
+  flex: 1;
+}
+
+.reset-title {
+  font-family: 'Fredoka', 'Comic Neue', sans-serif;
+  font-weight: 600;
+  color: #4A90E2;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.reset-countdown {
+  font-family: 'Fredoka', 'Comic Neue', sans-serif;
+  color: #667EEA;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Mobile adjustments for reset banner */
+@media (max-width: 768px) {
+  .weekly-reset-banner {
+    padding: 12px 15px;
+  }
+
+  .reset-icon {
+    font-size: 24px;
+  }
+
+  .reset-title {
+    font-size: 14px;
+  }
+
+  .reset-countdown {
+    font-size: 12px;
+  }
+}

@@ -228,4 +228,27 @@ leaderboard.get('/me/:userId', async (c) => {
   }
 });
 
+// GET /leaderboard/reset-info
+// Returns when the next weekly reset happens
+leaderboard.get('/reset-info', async (c) => {
+  try {
+    const { getNextResetTime, getTimeUntilReset } = await import('../utils/time');
+
+    const resetTimestamp = getNextResetTime();
+    const timeUntilReset = getTimeUntilReset();
+
+    return success({
+      next_reset_timestamp: resetTimestamp,
+      next_reset_iso: new Date(resetTimestamp * 1000).toISOString(),
+      time_until_reset: timeUntilReset,
+      reset_day: 'Monday',
+      reset_time: '00:00:00 ET',
+      reset_timezone: 'America/New_York'
+    });
+  } catch (err) {
+    console.error('Failed to fetch reset info', err);
+    return error('Failed to fetch reset info');
+  }
+});
+
 export default leaderboard;

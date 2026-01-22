@@ -116,9 +116,9 @@ async function cacheAllUserStats(env: Env): Promise<void> {
     let successCount = 0;
     let errorCount = 0;
 
-    // Calculate timestamp for 7 days ago
-    const now = Math.floor(Date.now() / 1000);
-    const sevenDaysAgo = now - (7 * 24 * 60 * 60);
+    // Calculate timestamp for start of current week (Monday 00:00:00 UTC)
+    const { getStartOfWeek } = await import('./utils/time');
+    const weekStartTimestamp = getStartOfWeek();
 
     // Update stats for each user
     for (const user of users) {
@@ -132,8 +132,8 @@ async function cacheAllUserStats(env: Env): Promise<void> {
         // Cache all-time stats
         await statsRepo.upsertOverallStats(user.id, allTimeStats, 'all_time');
 
-        // Get user's weekly activities (last 7 days)
-        const weeklyActivities = await activityRepo.findByUserIdSince(user.id, sevenDaysAgo, 10000);
+        // Get user's weekly activities (since Monday 00:00:00 UTC)
+        const weeklyActivities = await activityRepo.findByUserIdSince(user.id, weekStartTimestamp, 10000);
 
         // Calculate weekly stats
         const weeklyStats = calculateUserStats(weeklyActivities);

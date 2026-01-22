@@ -162,8 +162,8 @@
         <div class="card leaderboard-controls">
           <h3>Global Rankings</h3>
           <div class="period-selector">
-            <button class="period-btn active" data-period="all_time">All Time</button>
-            <button class="period-btn" data-period="weekly">This Week</button>
+            <button class="period-btn active" data-period="weekly">This Week</button>
+            <button class="period-btn" data-period="all_time">All Time</button>
           </div>
           <div class="category-selector">
             <select id="leaderboardCategory" class="category-select">
@@ -185,6 +185,9 @@
           </div>
           <button id="closeSportFilter" class="btn btn-secondary">Back to Overall</button>
         </div>
+
+        <!-- Weekly Reset Banner (shown only on weekly leaderboards) -->
+        <div id="weeklyResetBanner" class="weekly-reset-banner" style="display: none;"></div>
 
         <!-- Your Ranking Card -->
         <div id="userRankingCard" class="card user-ranking">

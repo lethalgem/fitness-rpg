@@ -655,6 +655,101 @@ header h1 {
   color: #2563eb;
 }
 
+/* Expandable Activity Details */
+.activity-item {
+  cursor: pointer;
+  position: relative;
+}
+
+.activity-details {
+  display: none;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.activity-item.expanded .activity-details {
+  display: block;
+}
+
+.activity-item.expanded .expand-indicator {
+  display: none;
+}
+
+.expand-indicator {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.75rem;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.expand-hint {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.xp-formula {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.85rem;
+}
+
+.formula-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+}
+
+.formula-label {
+  color: #64748b;
+}
+
+.formula-value {
+  color: #334155;
+  font-weight: 500;
+}
+
+.formula-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 0.5rem 0;
+}
+
+.formula-total {
+  font-weight: 700;
+}
+
+.formula-total .formula-label {
+  color: #334155;
+}
+
+.formula-total .formula-value {
+  color: var(--primary);
+}
+
+.intensity-row .formula-value {
+  color: #059669;
+}
+
+.intensity-note {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(251, 191, 36, 0.1);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #92400e;
+  text-align: center;
+}
+
 /* Tabs - Chao Garden Style */
 .tabs {
   display: flex;

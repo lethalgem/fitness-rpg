@@ -254,6 +254,7 @@
     return activities.slice(0, 10).map(activity => {
       const sportType = activity.sport_type ? formatSportType(activity.sport_type) : '';
       const distance = activity.distance ? `${(activity.distance / 1609.34).toFixed(1)} mi` : '';
+      const minutes = Math.round((activity.moving_time || activity.elapsed_time || 0) / 60);
       const time = activity.elapsed_time ? formatTime(activity.elapsed_time) : '';
       const details = [distance, time].filter(Boolean).join(' • ');
 
@@ -269,8 +270,11 @@
         </div>
       `).join('');
 
+      // Build intensity details
+      const intensityInfo = getIntensityInfo(activity);
+
       return `
-        <div class="chao-activity-item">
+        <div class="chao-activity-item" onclick="this.classList.toggle('expanded')">
           <div class="chao-activity-content">
             <div class="chao-activity-name">${activity.name || 'Untitled Activity'}</div>
             <div class="chao-activity-details">${details}</div>
@@ -279,9 +283,68 @@
           <div class="chao-activity-stats">
             ${statsHTML}
           </div>
+          <div class="chao-activity-expand-hint">tap for XP breakdown</div>
+          <div class="chao-activity-breakdown">
+            <div class="chao-xp-formula">
+              <div class="chao-formula-row">
+                <span>Time</span>
+                <span>${minutes} min</span>
+              </div>
+              <div class="chao-formula-row">
+                <span>Base Rate</span>
+                <span>× 10 XP/min</span>
+              </div>
+              <div class="chao-formula-row chao-formula-subtotal">
+                <span>Base XP</span>
+                <span>= ${activity.xp?.base?.toLocaleString() || minutes * 10} XP</span>
+              </div>
+              <div class="chao-formula-divider"></div>
+              <div class="chao-formula-row chao-formula-intensity">
+                <span>${intensityInfo.label}</span>
+                <span>${intensityInfo.value}</span>
+              </div>
+              <div class="chao-formula-row">
+                <span>Multiplier</span>
+                <span>× ${(activity.xp?.intensity_multiplier || 1).toFixed(2)}</span>
+              </div>
+              <div class="chao-formula-divider"></div>
+              <div class="chao-formula-row chao-formula-total">
+                <span>Total XP</span>
+                <span>= ${activity.xp?.total?.toLocaleString() || 0} XP</span>
+              </div>
+            </div>
+            ${intensityInfo.note ? `<div class="chao-intensity-note">${intensityInfo.note}</div>` : ''}
+            <div class="chao-activity-collapse-hint">tap to collapse</div>
+          </div>
         </div>
       `;
     }).join('');
+  }
+
+  // Get intensity source info for display
+  function getIntensityInfo(activity) {
+    const source = activity.xp?.intensity_source;
+
+    if (source === 'heartrate') {
+      const hr = Math.round(activity.average_heartrate || 0);
+      const maxHR = 190;
+      const percent = Math.round((hr / maxHR) * 100);
+      return { label: 'Avg HR', value: `${hr} bpm (${percent}% max)`, note: null };
+    } else if (source === 'watts') {
+      const watts = Math.round(activity.average_watts || 0);
+      const ftp = 200;
+      const percent = Math.round((watts / ftp) * 100);
+      return { label: 'Avg Power', value: `${watts}W (${percent}% FTP)`, note: null };
+    } else if (source === 'pace') {
+      const speedMs = activity.average_speed || 0;
+      if (speedMs > 0) {
+        const paceMinPerMile = (1609.34 / speedMs) / 60;
+        const paceMin = Math.floor(paceMinPerMile);
+        const paceSec = Math.round((paceMinPerMile - paceMin) * 60);
+        return { label: 'Avg Pace', value: `${paceMin}:${paceSec.toString().padStart(2, '0')} /mi`, note: null };
+      }
+    }
+    return { label: 'Intensity', value: 'No data', note: '💡 Wear a HR monitor to earn bonus XP!' };
   }
 
   // Format sport type from PascalCase to readable (e.g., "WeightTraining" → "Weight Training")

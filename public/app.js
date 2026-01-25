@@ -420,7 +420,8 @@ async function loadRecentActivities(userId, limit = 10) {
     activityList.innerHTML = activities.map(activity => {
       const date = new Date(activity.start_date_local || activity.start_date);
       const timeAgo = getTimeAgo(date);
-      const hours = ((activity.moving_time || activity.elapsed_time || 0) / 3600).toFixed(1);
+      const minutes = Math.round((activity.moving_time || activity.elapsed_time || 0) / 60);
+      const hours = (minutes / 60).toFixed(1);
       const miles = ((activity.distance || 0) / 1609.34).toFixed(1);
 
       // Get intensity indicator
@@ -433,8 +434,11 @@ async function loadRecentActivities(userId, limit = 10) {
         intensityBadge = `<span class="intensity-badge pace" title="Pace based">🏃 ${activity.xp.intensity_multiplier.toFixed(1)}x</span>`;
       }
 
+      // Build XP calculation details
+      const intensityDetails = getIntensityDetails(activity);
+
       return `
-        <div class="activity-item">
+        <div class="activity-item" onclick="this.classList.toggle('expanded')">
           <div class="activity-header">
             <div class="activity-title">
               <span class="activity-name">${activity.name || 'Activity'}</span>
@@ -458,6 +462,39 @@ async function loadRecentActivities(userId, limit = 10) {
               <span class="xp-agility">⚡ ${activity.xp.agility.toLocaleString()}</span>
             </div>
           </div>
+          <div class="activity-details">
+            <div class="xp-formula">
+              <div class="formula-row">
+                <span class="formula-label">Time</span>
+                <span class="formula-value">${minutes} min</span>
+              </div>
+              <div class="formula-row">
+                <span class="formula-label">Base Rate</span>
+                <span class="formula-value">× 10 XP/min</span>
+              </div>
+              <div class="formula-row">
+                <span class="formula-label">Base XP</span>
+                <span class="formula-value">= ${activity.xp.base.toLocaleString()} XP</span>
+              </div>
+              <div class="formula-divider"></div>
+              <div class="formula-row intensity-row">
+                <span class="formula-label">${intensityDetails.label}</span>
+                <span class="formula-value">${intensityDetails.value}</span>
+              </div>
+              <div class="formula-row">
+                <span class="formula-label">Multiplier</span>
+                <span class="formula-value">× ${activity.xp.intensity_multiplier.toFixed(2)}</span>
+              </div>
+              <div class="formula-divider"></div>
+              <div class="formula-row formula-total">
+                <span class="formula-label">Total XP</span>
+                <span class="formula-value">= ${activity.xp.total.toLocaleString()} XP</span>
+              </div>
+            </div>
+            ${intensityDetails.note ? `<div class="intensity-note">${intensityDetails.note}</div>` : ''}
+            <div class="expand-hint">tap to collapse</div>
+          </div>
+          <div class="expand-indicator">tap for details</div>
         </div>
       `;
     }).join('');
@@ -486,6 +523,48 @@ function getTimeAgo(date) {
     return `${diffMin} min${diffMin > 1 ? 's' : ''} ago`;
   } else {
     return 'Just now';
+  }
+}
+
+function getIntensityDetails(activity) {
+  const source = activity.xp.intensity_source;
+  const multiplier = activity.xp.intensity_multiplier;
+
+  if (source === 'heartrate') {
+    const hr = Math.round(activity.average_heartrate);
+    const maxHR = 190; // Default max HR
+    const percent = Math.round((hr / maxHR) * 100);
+    return {
+      label: 'Avg Heart Rate',
+      value: `${hr} bpm (${percent}% max)`,
+      note: null
+    };
+  } else if (source === 'watts') {
+    const watts = Math.round(activity.average_watts);
+    const ftp = 200; // Default FTP
+    const percent = Math.round((watts / ftp) * 100);
+    return {
+      label: 'Avg Power',
+      value: `${watts}W (${percent}% FTP)`,
+      note: null
+    };
+  } else if (source === 'pace') {
+    const speedMs = activity.average_speed;
+    const paceMinPerMile = speedMs > 0 ? (1609.34 / speedMs) / 60 : 0;
+    const paceMin = Math.floor(paceMinPerMile);
+    const paceSec = Math.round((paceMinPerMile - paceMin) * 60);
+    return {
+      label: 'Avg Pace',
+      value: `${paceMin}:${paceSec.toString().padStart(2, '0')} /mi`,
+      note: null
+    };
+  } else {
+    // Default - no intensity data
+    return {
+      label: 'Intensity',
+      value: 'No data',
+      note: '💡 Wear a heart rate monitor to earn bonus XP!'
+    };
   }
 }
 

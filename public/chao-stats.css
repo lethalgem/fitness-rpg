@@ -473,6 +473,92 @@
   font-size: 1.2rem;
 }
 
+/* Expandable Activity Card */
+.chao-activity-item {
+  cursor: pointer;
+  position: relative;
+}
+
+.chao-activity-expand-hint {
+  position: absolute;
+  bottom: 0.4rem;
+  right: 1rem;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chao-activity-item.expanded .chao-activity-expand-hint {
+  display: none;
+}
+
+.chao-activity-breakdown {
+  display: none;
+  width: 100%;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+}
+
+.chao-activity-item.expanded .chao-activity-breakdown {
+  display: block;
+}
+
+.chao-xp-formula {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.85rem;
+}
+
+.chao-formula-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.chao-formula-subtotal {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.chao-formula-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0.5rem 0;
+}
+
+.chao-formula-intensity {
+  color: #90EE90;
+}
+
+.chao-formula-total {
+  font-weight: 700;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.chao-intensity-note {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 200, 50, 0.2);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.95);
+  text-align: center;
+}
+
+.chao-activity-collapse-hint {
+  text-align: center;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 @media (max-width: 768px) {
   .chao-header {
     padding: 1.5rem 1rem 1.5rem 1rem;

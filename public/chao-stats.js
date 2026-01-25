@@ -252,6 +252,7 @@
     }
 
     return activities.slice(0, 10).map(activity => {
+      const sportType = activity.sport_type ? formatSportType(activity.sport_type) : '';
       const distance = activity.distance ? `${(activity.distance / 1609.34).toFixed(1)} mi` : '';
       const time = activity.elapsed_time ? formatTime(activity.elapsed_time) : '';
       const details = [distance, time].filter(Boolean).join(' • ');
@@ -273,6 +274,7 @@
           <div class="chao-activity-content">
             <div class="chao-activity-name">${activity.name || 'Untitled Activity'}</div>
             <div class="chao-activity-details">${details}</div>
+            ${sportType ? `<div class="chao-activity-type">${sportType}</div>` : ''}
           </div>
           <div class="chao-activity-stats">
             ${statsHTML}
@@ -280,6 +282,14 @@
         </div>
       `;
     }).join('');
+  }
+
+  // Format sport type from PascalCase to readable (e.g., "WeightTraining" → "Weight Training")
+  function formatSportType(sportType) {
+    return sportType
+      .replace(/([A-Z])/g, ' $1')  // Add space before capitals
+      .replace(/^./, str => str.toUpperCase())  // Capitalize first letter
+      .trim();
   }
 
   // Format time in seconds to readable format

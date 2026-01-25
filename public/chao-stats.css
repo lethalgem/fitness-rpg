@@ -415,6 +415,13 @@
   font-weight: 600;
 }
 
+.chao-activity-type {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
 .chao-activity-stats {
   display: flex;
   flex-direction: column;

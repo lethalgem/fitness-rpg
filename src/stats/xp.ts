@@ -3,7 +3,6 @@
 import type { Activity } from '../types';
 import {
   BASE_XP_PER_MINUTE,
-  HR_ZONE_MULTIPLIERS,
   WATT_ZONE_MULTIPLIERS,
   PACE_INTENSITY_THRESHOLDS,
   DEFAULT_MAX_HR,
@@ -63,18 +62,26 @@ export function calculateActivityXP(activity: Activity): XPCalculation {
   };
 }
 
-// Calculate intensity multiplier from heart rate
+// Calculate intensity multiplier from heart rate using continuous linear scale
+// Every percentage point of HR matters - no arbitrary zone boundaries
 function getHRIntensityMultiplier(avgHeartRate: number, maxHR: number = DEFAULT_MAX_HR): number {
   const hrPercentage = (avgHeartRate / maxHR) * 100;
 
-  for (const zone of Object.values(HR_ZONE_MULTIPLIERS)) {
-    if (hrPercentage >= zone.min && hrPercentage < zone.max) {
-      return zone.multiplier;
-    }
-  }
+  // Linear scale: 50% HR → 0.7×, 100% HR → 2.5×
+  // Formula: multiplier = 0.7 + (hrPercent - 50) × 0.036
+  const MIN_HR_PERCENT = 50;
+  const MAX_HR_PERCENT = 100;
+  const MIN_MULTIPLIER = 0.7;
+  const MAX_MULTIPLIER = 2.5;
 
-  // If HR is above 100%, still use max multiplier
-  return HR_ZONE_MULTIPLIERS.zone5.multiplier;
+  // Clamp HR percentage to valid range
+  const clampedHR = Math.max(MIN_HR_PERCENT, Math.min(MAX_HR_PERCENT, hrPercentage));
+
+  // Linear interpolation
+  const multiplier = MIN_MULTIPLIER +
+    (clampedHR - MIN_HR_PERCENT) * (MAX_MULTIPLIER - MIN_MULTIPLIER) / (MAX_HR_PERCENT - MIN_HR_PERCENT);
+
+  return multiplier;
 }
 
 // Calculate intensity multiplier from watts (cycling)

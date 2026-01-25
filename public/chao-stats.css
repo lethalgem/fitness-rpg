@@ -480,9 +480,9 @@
 }
 
 .chao-activity-expand-hint {
-  position: absolute;
-  bottom: 0.4rem;
-  right: 1rem;
+  width: 100%;
+  text-align: center;
+  margin-top: 0.75rem;
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;

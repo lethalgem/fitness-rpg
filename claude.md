@@ -120,6 +120,7 @@ Tracking via `rate_limits` table with automatic cleanup.
 
 **Stat Types**: strength, endurance, agility, overall
 **Time Periods**: all_time, weekly
+**Weekly Reset**: Sunday 11:59 PM Eastern Time (America/New_York) - see `src/utils/time.ts`
 
 Stats are calculated from activities based on sport type mappings in `stats/config.ts`:
 
@@ -260,6 +261,14 @@ Frontend is served from `public/` directory via Cloudflare Workers Assets bindin
 
 ## Recent Changes
 
+- **2026-01-25**: Added "How Stats Work" explainer modal
+  - Accessible via "How are stats calculated?" link below stats grid
+  - Shows XP formula, 3-stat breakdown, all 79 activity mappings (searchable), intensity multipliers, leveling info
+  - Fixed outdated documentation in README.md and test comments (old sqrt formula → linear 3000 XP/level)
+- **2026-01-25**: Changed weekly leaderboard reset to Sunday 11:59 PM Eastern Time
+  - Previously UTC midnight Monday
+  - Uses `src/utils/time.ts` for timezone-aware calculations (handles DST)
+  - Weekly is now the default leaderboard view
 - **2026-01-19**: Fixed progress bar segmentation for better UX motivation
   - One-to-one mode (1-10 workouts) now always shows 10 segments
   - Filled segments = progress made, empty segments = workouts remaining

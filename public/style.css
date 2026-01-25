@@ -1674,3 +1674,345 @@ footer a {
     font-size: 12px;
   }
 }
+
+/* ============================================
+   Stats Explainer Modal
+   ============================================ */
+
+/* Help link */
+.stats-help-link {
+  text-align: center;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.stats-help-link a {
+  font-family: 'Fredoka', 'Comic Neue', sans-serif;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.stats-help-link a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Stats explainer modal content */
+.stats-explainer-content {
+  max-width: 650px;
+  max-height: 90vh;
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.stats-explainer-content::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
+}
+
+.stats-explainer-body {
+  overflow-y: auto;
+  max-height: calc(90vh - 70px);
+  padding: 1.2rem 1.5rem;
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.stats-explainer-body::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
+}
+
+/* Sections */
+.explainer-section {
+  margin-bottom: 1.5rem;
+}
+
+.explainer-section:last-child {
+  margin-bottom: 0;
+}
+
+.explainer-section h3 {
+  font-family: 'Fredoka', 'Comic Neue', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.7rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Formula box */
+.formula-box {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.formula-box code {
+  font-family: 'Fredoka', monospace;
+  font-size: 0.95rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+.formula-example {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.5;
+}
+
+/* Stats explanation */
+.stats-explanation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.stat-explain {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.stat-explain.strength {
+  border-left: 3px solid #FF6B6B;
+}
+
+.stat-explain.endurance {
+  border-left: 3px solid #4ECDC4;
+}
+
+.stat-explain.agility {
+  border-left: 3px solid #FFE66D;
+}
+
+.stat-icon {
+  font-size: 1.4rem;
+}
+
+.stat-explain strong {
+  font-family: 'Fredoka', 'Comic Neue', sans-serif;
+  font-size: 0.9rem;
+  color: #fff;
+  display: block;
+}
+
+.stat-explain p {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.stat-note {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Activity search */
+.activity-search-container {
+  margin-bottom: 1rem;
+}
+
+.activity-search-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font-family: 'Fredoka', 'Comic Neue', sans-serif;
+  font-size: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.activity-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.activity-search-input:focus {
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Activity table */
+.activity-table-container {
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+}
+
+.activity-mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Fredoka', 'Comic Neue', sans-serif;
+}
+
+.activity-mapping-table thead {
+  background: rgba(80, 150, 220, 0.95);
+}
+
+.activity-mapping-table th {
+  padding: 0.5rem 0.4rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: left;
+  font-size: 0.8rem;
+}
+
+.activity-mapping-table th.stat-col {
+  text-align: center;
+  width: 50px;
+}
+
+.activity-mapping-table td {
+  padding: 0.4rem;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.activity-mapping-table td.stat-col {
+  text-align: center;
+  font-weight: 600;
+}
+
+.activity-mapping-table td.stat-col.strength {
+  color: #FF8A8A;
+}
+
+.activity-mapping-table td.stat-col.endurance {
+  color: #7FEDD8;
+}
+
+.activity-mapping-table td.stat-col.agility {
+  color: #FFE66D;
+}
+
+.activity-mapping-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.activity-mapping-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.activity-mapping-table .no-results {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  padding: 1.5rem;
+}
+
+/* Intensity zones */
+.intensity-intro {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 0.6rem;
+}
+
+.intensity-zones {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+}
+
+.zone-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.7rem;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+}
+
+.zone-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.zone-mult {
+  font-family: 'Fredoka', monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #FFE66D;
+}
+
+/* Leveling info */
+.leveling-info p {
+  font-size: 0.95rem;
+  color: #fff;
+  margin-bottom: 0.6rem;
+  text-align: center;
+}
+
+.level-examples {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.level-examples span {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.35rem 0.7rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Mobile adjustments for stats explainer */
+@media (max-width: 768px) {
+  .stats-explainer-content {
+    max-width: 95%;
+    max-height: 92vh;
+  }
+
+  .stats-explainer-body {
+    padding: 0.8rem 1rem;
+    max-height: calc(92vh - 60px);
+  }
+
+  .explainer-section h3 {
+    font-size: 1rem;
+  }
+
+  .formula-box code {
+    font-size: 0.85rem;
+  }
+
+  .stat-icon {
+    font-size: 1.2rem;
+  }
+
+  .activity-mapping-table th,
+  .activity-mapping-table td {
+    padding: 0.35rem 0.3rem;
+    font-size: 0.75rem;
+  }
+
+  .intensity-zones {
+    grid-template-columns: 1fr;
+  }
+
+  .level-examples {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+}

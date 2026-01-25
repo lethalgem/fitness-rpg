@@ -1297,3 +1297,150 @@ async function updateResetBanner(timePeriod) {
     resetBanner.style.display = 'none';
   }
 }
+
+// ============================================
+// Stats Explainer Modal
+// ============================================
+
+// Activity mappings data (from src/config/stats.ts)
+const ACTIVITY_MAPPINGS = {
+  // Running activities
+  'Run': { strength: 0.1, endurance: 0.7, agility: 0.2 },
+  'TrailRun': { strength: 0.2, endurance: 0.5, agility: 0.3 },
+  'VirtualRun': { strength: 0.1, endurance: 0.7, agility: 0.2 },
+  // Cycling activities
+  'Ride': { strength: 0.3, endurance: 0.6, agility: 0.1 },
+  'VirtualRide': { strength: 0.3, endurance: 0.6, agility: 0.1 },
+  'MountainBikeRide': { strength: 0.3, endurance: 0.4, agility: 0.3 },
+  'GravelRide': { strength: 0.3, endurance: 0.5, agility: 0.2 },
+  'EBikeRide': { strength: 0.2, endurance: 0.7, agility: 0.1 },
+  // Swimming
+  'Swim': { strength: 0.4, endurance: 0.5, agility: 0.1 },
+  // Strength training
+  'WeightTraining': { strength: 0.85, endurance: 0.1, agility: 0.05 },
+  'Crossfit': { strength: 0.5, endurance: 0.2, agility: 0.3 },
+  // Hiking & walking
+  'Hike': { strength: 0.25, endurance: 0.6, agility: 0.15 },
+  'Walk': { strength: 0.1, endurance: 0.8, agility: 0.1 },
+  // Rowing & paddling
+  'Rowing': { strength: 0.5, endurance: 0.4, agility: 0.1 },
+  'VirtualRow': { strength: 0.5, endurance: 0.4, agility: 0.1 },
+  'Kayaking': { strength: 0.4, endurance: 0.5, agility: 0.1 },
+  'Canoeing': { strength: 0.4, endurance: 0.5, agility: 0.1 },
+  'StandUpPaddling': { strength: 0.35, endurance: 0.45, agility: 0.2 },
+  // Winter sports
+  'AlpineSki': { strength: 0.4, endurance: 0.3, agility: 0.3 },
+  'BackcountrySki': { strength: 0.3, endurance: 0.5, agility: 0.2 },
+  'NordicSki': { strength: 0.2, endurance: 0.6, agility: 0.2 },
+  'Snowboard': { strength: 0.4, endurance: 0.3, agility: 0.3 },
+  'Snowshoe': { strength: 0.25, endurance: 0.6, agility: 0.15 },
+  // Climbing
+  'RockClimbing': { strength: 0.6, endurance: 0.2, agility: 0.2 },
+  // HIIT & cardio
+  'HighIntensityIntervalTraining': { strength: 0.3, endurance: 0.4, agility: 0.3 },
+  'Workout': { strength: 0.4, endurance: 0.4, agility: 0.2 },
+  'Elliptical': { strength: 0.2, endurance: 0.7, agility: 0.1 },
+  'StairStepper': { strength: 0.35, endurance: 0.55, agility: 0.1 },
+  // Yoga & flexibility
+  'Yoga': { strength: 0.2, endurance: 0.5, agility: 0.3 },
+  'Pilates': { strength: 0.3, endurance: 0.4, agility: 0.3 },
+  // Ball sports
+  'Soccer': { strength: 0.3, endurance: 0.4, agility: 0.3 },
+  'Tennis': { strength: 0.3, endurance: 0.3, agility: 0.4 },
+  'Badminton': { strength: 0.2, endurance: 0.4, agility: 0.4 },
+  'Pickleball': { strength: 0.2, endurance: 0.4, agility: 0.4 },
+  'TableTennis': { strength: 0.1, endurance: 0.4, agility: 0.5 },
+  'Squash': { strength: 0.3, endurance: 0.3, agility: 0.4 },
+  'Racquetball': { strength: 0.3, endurance: 0.3, agility: 0.4 },
+  // Other activities
+  'Golf': { strength: 0.15, endurance: 0.7, agility: 0.15 },
+  'Skateboard': { strength: 0.3, endurance: 0.3, agility: 0.4 },
+  'InlineSkate': { strength: 0.2, endurance: 0.5, agility: 0.3 },
+  'IceSkate': { strength: 0.2, endurance: 0.5, agility: 0.3 },
+  'RollerSki': { strength: 0.2, endurance: 0.6, agility: 0.2 },
+  // Water sports
+  'Surfing': { strength: 0.3, endurance: 0.3, agility: 0.4 },
+  'Kitesurf': { strength: 0.4, endurance: 0.3, agility: 0.3 },
+  'Windsurf': { strength: 0.4, endurance: 0.3, agility: 0.3 },
+  'Sail': { strength: 0.3, endurance: 0.5, agility: 0.2 },
+  // Wheelchair
+  'Wheelchair': { strength: 0.4, endurance: 0.5, agility: 0.1 },
+  'Handcycle': { strength: 0.3, endurance: 0.6, agility: 0.1 },
+  // Misc
+  'Velomobile': { strength: 0.3, endurance: 0.6, agility: 0.1 },
+};
+
+// Format activity name for display (add spaces before capitals)
+function formatActivityName(name) {
+  return name.replace(/([A-Z])/g, ' $1').trim();
+}
+
+// Populate activity table
+function populateActivityTable(filter = '') {
+  const tbody = document.getElementById('activityMappingBody');
+  if (!tbody) return;
+
+  const filterLower = filter.toLowerCase();
+  const entries = Object.entries(ACTIVITY_MAPPINGS)
+    .filter(([name]) => formatActivityName(name).toLowerCase().includes(filterLower))
+    .sort((a, b) => formatActivityName(a[0]).localeCompare(formatActivityName(b[0])));
+
+  tbody.innerHTML = entries.map(([name, stats]) => `
+    <tr>
+      <td class="activity-name">${formatActivityName(name)}</td>
+      <td class="stat-col strength">${Math.round(stats.strength * 100)}%</td>
+      <td class="stat-col endurance">${Math.round(stats.endurance * 100)}%</td>
+      <td class="stat-col agility">${Math.round(stats.agility * 100)}%</td>
+    </tr>
+  `).join('');
+
+  if (entries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="no-results">No activities found</td></tr>';
+  }
+}
+
+// Initialize stats explainer modal
+function initStatsExplainerModal() {
+  const modal = document.getElementById('statsExplainerModal');
+  const openLink = document.getElementById('howStatsLink');
+  const closeBtn = document.getElementById('closeStatsExplainer');
+  const searchInput = document.getElementById('activitySearchInput');
+
+  if (!modal || !openLink) return;
+
+  // Open modal
+  openLink.onclick = (e) => {
+    e.preventDefault();
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // Prevent body scroll
+    populateActivityTable();
+  };
+
+  // Close modal helper
+  const closeModal = () => {
+    modal.style.display = 'none';
+    document.body.style.overflow = ''; // Restore body scroll
+  };
+
+  // Close modal
+  if (closeBtn) {
+    closeBtn.onclick = closeModal;
+  }
+
+  // Click outside to close
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  };
+
+  // Search filter
+  if (searchInput) {
+    searchInput.oninput = (e) => {
+      populateActivityTable(e.target.value);
+    };
+  }
+}
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', initStatsExplainerModal);

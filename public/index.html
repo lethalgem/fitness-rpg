@@ -115,6 +115,9 @@
           <div class="chao-stats-grid" id="chaoStatsGrid">
             <div class="chao-loading">Loading stats...</div>
           </div>
+          <div class="stats-help-link">
+            <a href="#" id="howStatsLink">How are stats calculated?</a>
+          </div>
         </div>
 
         <!-- Activities Section -->
@@ -246,6 +249,126 @@
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- How Stats Work Modal -->
+      <div id="statsExplainerModal" class="modal" style="display: none;">
+        <div class="modal-content stats-explainer-content">
+          <div class="modal-header">
+            <h2>📊 How Your Stats Work</h2>
+            <button class="modal-close" id="closeStatsExplainer">✕</button>
+          </div>
+          <div class="modal-body stats-explainer-body">
+            <!-- The Formula -->
+            <section class="explainer-section">
+              <h3>The Formula</h3>
+              <div class="formula-box">
+                <code>XP = Time (min) × 10 × Intensity Multiplier</code>
+              </div>
+              <div class="formula-example">
+                <strong>Example:</strong> A 30-minute run at moderate intensity<br>
+                → 30 × 10 × 1.5 = <strong>450 XP</strong>
+              </div>
+            </section>
+
+            <!-- The 3 Stats -->
+            <section class="explainer-section">
+              <h3>The 3 Stats</h3>
+              <div class="stats-explanation">
+                <div class="stat-explain strength">
+                  <span class="stat-icon">💪</span>
+                  <div>
+                    <strong>Strength</strong>
+                    <p>Power & resistance activities</p>
+                  </div>
+                </div>
+                <div class="stat-explain endurance">
+                  <span class="stat-icon">🏃</span>
+                  <div>
+                    <strong>Endurance</strong>
+                    <p>Cardio & sustained effort</p>
+                  </div>
+                </div>
+                <div class="stat-explain agility">
+                  <span class="stat-icon">⚡</span>
+                  <div>
+                    <strong>Agility</strong>
+                    <p>Quick movements & skill sports</p>
+                  </div>
+                </div>
+              </div>
+              <p class="stat-note">Your XP is distributed across stats based on activity type.</p>
+            </section>
+
+            <!-- Activity Mappings -->
+            <section class="explainer-section">
+              <h3>Activity Mappings</h3>
+              <div class="activity-search-container">
+                <input type="text" id="activitySearchInput" placeholder="🔍 Search activities..." class="activity-search-input">
+              </div>
+              <div class="activity-table-container">
+                <table class="activity-mapping-table">
+                  <thead>
+                    <tr>
+                      <th>Activity</th>
+                      <th class="stat-col strength">💪</th>
+                      <th class="stat-col endurance">🏃</th>
+                      <th class="stat-col agility">⚡</th>
+                    </tr>
+                  </thead>
+                  <tbody id="activityMappingBody">
+                    <!-- Populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- Intensity Multipliers -->
+            <section class="explainer-section">
+              <h3>Intensity Multipliers</h3>
+              <p class="intensity-intro">Higher intensity = more XP! We use your heart rate, power, or pace data when available.</p>
+              <div class="intensity-zones">
+                <div class="zone-row">
+                  <span class="zone-label">No data</span>
+                  <span class="zone-mult">1.0×</span>
+                </div>
+                <div class="zone-row">
+                  <span class="zone-label">Zone 1 (0-60% HR)</span>
+                  <span class="zone-mult">1.0×</span>
+                </div>
+                <div class="zone-row">
+                  <span class="zone-label">Zone 2 (60-70% HR)</span>
+                  <span class="zone-mult">1.2×</span>
+                </div>
+                <div class="zone-row">
+                  <span class="zone-label">Zone 3 (70-80% HR)</span>
+                  <span class="zone-mult">1.5×</span>
+                </div>
+                <div class="zone-row">
+                  <span class="zone-label">Zone 4 (80-90% HR)</span>
+                  <span class="zone-mult">1.8×</span>
+                </div>
+                <div class="zone-row">
+                  <span class="zone-label">Zone 5 (90%+ HR)</span>
+                  <span class="zone-mult">2.0×</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Leveling -->
+            <section class="explainer-section">
+              <h3>Leveling</h3>
+              <div class="leveling-info">
+                <p><strong>3,000 XP per level</strong> (linear progression)</p>
+                <div class="level-examples">
+                  <span>Level 10 = 30,000 XP</span>
+                  <span>Level 50 = 150,000 XP</span>
+                  <span>Level 100 = 300,000 XP</span>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
       </div>

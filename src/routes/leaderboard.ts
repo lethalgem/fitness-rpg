@@ -241,8 +241,8 @@ leaderboard.get('/reset-info', async (c) => {
       next_reset_timestamp: resetTimestamp,
       next_reset_iso: new Date(resetTimestamp * 1000).toISOString(),
       time_until_reset: timeUntilReset,
-      reset_day: 'Monday',
-      reset_time: '00:00:00 ET',
+      reset_day: 'Sunday',
+      reset_time: '11:59 PM ET',
       reset_timezone: 'America/New_York'
     });
   } catch (err) {

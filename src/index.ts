@@ -64,12 +64,13 @@ app.get('/debug/weekly-activities/:userId', async (c) => {
     const dbClient = createDbClient(c.env);
     const activityRepo = new ActivityRepository(dbClient);
 
-    // Calculate 7 days ago
+    // Calculate week start (Sunday 23:59 ET reset boundary)
+    const { getStartOfWeek } = await import('./utils/time');
     const now = Math.floor(Date.now() / 1000);
-    const sevenDaysAgo = now - (7 * 24 * 60 * 60);
+    const weekStartTimestamp = getStartOfWeek();
 
     // Fetch weekly activities
-    const weeklyActivities = await activityRepo.findByUserIdSince(userId, sevenDaysAgo, 10000);
+    const weeklyActivities = await activityRepo.findByUserIdSince(userId, weekStartTimestamp, 10000);
     const allActivities = await activityRepo.findByUserId(userId, 10000);
 
     // Calculate stats
@@ -78,7 +79,7 @@ app.get('/debug/weekly-activities/:userId', async (c) => {
 
     return c.json({
       now: new Date(now * 1000).toISOString(),
-      sevenDaysAgo: new Date(sevenDaysAgo * 1000).toISOString(),
+      weekStart: new Date(weekStartTimestamp * 1000).toISOString(),
       weeklyActivitiesCount: weeklyActivities.length,
       allTimeActivitiesCount: allActivities.length,
       weeklyActivities: weeklyActivities.map(a => ({

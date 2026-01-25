@@ -1286,7 +1286,7 @@ async function updateResetBanner(timePeriod) {
         <div class="reset-banner">
           <span class="reset-icon">⏰</span>
           <div class="reset-text">
-            <div class="reset-title">Weekly Leaderboard Resets Every Monday</div>
+            <div class="reset-title">Weekly Leaderboard Resets Every Sunday at 11:59 PM</div>
             <div class="reset-countdown">Next reset: ${timeUntilReset} (${localResetTime})</div>
           </div>
         </div>

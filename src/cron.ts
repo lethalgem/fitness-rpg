@@ -132,7 +132,7 @@ async function cacheAllUserStats(env: Env): Promise<void> {
         // Cache all-time stats
         await statsRepo.upsertOverallStats(user.id, allTimeStats, 'all_time');
 
-        // Get user's weekly activities (since Monday 00:00:00 UTC)
+        // Get user's weekly activities (since Sunday 23:59 ET)
         const weeklyActivities = await activityRepo.findByUserIdSince(user.id, weekStartTimestamp, 10000);
 
         // Calculate weekly stats

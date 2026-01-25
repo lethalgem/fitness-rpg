@@ -141,10 +141,10 @@ async function updateUserStats(env: Env, userId: number): Promise<void> {
   const allTimeStats = calculateUserStats(allActivities);
   await statsRepo.upsertOverallStats(userId, allTimeStats, 'all_time');
 
-  // Calculate weekly stats
-  const now = Math.floor(Date.now() / 1000);
-  const sevenDaysAgo = now - (7 * 24 * 60 * 60);
-  const weeklyActivities = await activityRepo.findByUserIdSince(userId, sevenDaysAgo, 10000);
+  // Calculate weekly stats (using Sunday 23:59 ET reset boundary)
+  const { getStartOfWeek } = await import('../utils/time');
+  const weekStartTimestamp = getStartOfWeek();
+  const weeklyActivities = await activityRepo.findByUserIdSince(userId, weekStartTimestamp, 10000);
   const weeklyStats = calculateUserStats(weeklyActivities);
   await statsRepo.upsertOverallStats(userId, weeklyStats, 'weekly');
 

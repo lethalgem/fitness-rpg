@@ -192,11 +192,11 @@ export const HR_ZONE_MULTIPLIERS = {
 ```
 
 ### Change Level Progression
-Currently uses formula: `level = floor(sqrt(totalXP / 1000))`
+Currently uses formula: `level = floor(totalXP / 3000)` (linear, 3,000 XP per level)
 
 Modify in [src/config/xp.ts](src/config/xp.ts):
 ```typescript
-export const XP_PER_LEVEL_FACTOR = 1000; // Change this
+export const XP_PER_LEVEL_BASE = 3000; // Change this
 ```
 
 ## 📊 How It Works

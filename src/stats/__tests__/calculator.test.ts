@@ -57,8 +57,8 @@ describe('calculateUserStats', () => {
 
     const stats = calculateUserStats(activities);
 
-    // Level formula: floor(sqrt(xp / 1000))
-    // 1000 XP = Level 1
+    // Level formula: floor(xp / 3000) - linear, 3000 XP per level
+    // 3000 XP = Level 1
     expect(stats.level).toBeGreaterThanOrEqual(1);
   });
 

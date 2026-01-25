@@ -62,8 +62,8 @@ export class ActivityRepository {
           start_date, start_date_local, distance, moving_time,
           elapsed_time, total_elevation_gain, average_speed, max_speed,
           average_heartrate, max_heartrate, average_watts, max_watts,
-          kilojoules, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          kilojoules, suffer_score, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(strava_activity_id) DO UPDATE SET
           name = excluded.name,
           sport_type = excluded.sport_type,
@@ -79,7 +79,8 @@ export class ActivityRepository {
           max_heartrate = excluded.max_heartrate,
           average_watts = excluded.average_watts,
           max_watts = excluded.max_watts,
-          kilojoules = excluded.kilojoules`
+          kilojoules = excluded.kilojoules,
+          suffer_score = excluded.suffer_score`
       ).bind(
         userId,
         activity.id.toString(),
@@ -98,6 +99,7 @@ export class ActivityRepository {
         activity.average_watts || null,
         activity.max_watts || null,
         activity.kilojoules || null,
+        activity.suffer_score || null,
         now
       );
 

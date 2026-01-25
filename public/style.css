@@ -1953,6 +1953,13 @@ footer a {
   color: #FFE66D;
 }
 
+.intensity-fallback {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
 /* Leveling info */
 .leveling-info p {
   font-size: 0.95rem;

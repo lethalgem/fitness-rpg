@@ -1,7 +1,7 @@
 // Cron worker for background job processing
 // Triggered every 15 minutes by Cloudflare Workers cron
 
-import type { Env } from './types';
+import type { Env, User } from './types';
 import { createDbClient } from './db/client';
 import { JobRepository } from './db/jobs';
 import { ImportJobProcessor } from './jobs/importer';

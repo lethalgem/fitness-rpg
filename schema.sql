@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS activities (
   average_watts REAL,
   max_watts INTEGER,
   kilojoules REAL,
+  suffer_score INTEGER,
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

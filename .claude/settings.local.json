@@ -16,7 +16,17 @@
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nDocument stat system design decision for racing minigame\n\n- Added comprehensive stat system analysis to /plans/stat-system-analysis.md\n- Decision: Keep 3-stat system \\(Strength/Endurance/Agility\\) unchanged\n- 79 Strava activities well-mapped with validated distributions\n- System designed with future Chao Garden-style racing in mind\n- Updated CLAUDE.md with stat philosophy and racing concepts\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(python:*)",
-      "Bash(jq:*)"
+      "Bash(jq:*)",
+      "Bash(wrangler d1 execute:*)",
+      "Bash(timeout 30 bash -c 'sleep 15 && curl -s \"\"https://fitness-rpg.iancashdeveloper.workers.dev/sync/resync-status\"\"')",
+      "Bash(timeout 45 bash -c 'sleep 30 && curl -s \"\"https://fitness-rpg.iancashdeveloper.workers.dev/sync/resync-status\"\"')",
+      "Bash(timeout 45 bash -c 'sleep 35 && curl -s \"\"https://fitness-rpg.iancashdeveloper.workers.dev/sync/resync-status\"\"')",
+      "Bash(timeout 50 bash -c 'sleep 40 && curl -s \"\"https://fitness-rpg.iancashdeveloper.workers.dev/sync/resync-status\"\"')",
+      "Bash(timeout 60 bash -c 'sleep 45 && curl -s \"\"https://fitness-rpg.iancashdeveloper.workers.dev/sync/resync-status\"\"')",
+      "Bash(for:*)",
+      "Bash(do curl -s \"https://fitness-rpg.iancashdeveloper.workers.dev/cron/resync-suffer-scores\")",
+      "Bash(done)",
+      "Bash(timeout 65 bash -c 'sleep 55 && curl -s \"\"https://fitness-rpg.iancashdeveloper.workers.dev/sync/resync-status\"\"')"
     ]
   }
 }

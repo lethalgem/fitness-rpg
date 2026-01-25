@@ -45,6 +45,7 @@ export interface Activity {
   average_watts?: number;
   max_watts?: number;
   kilojoules?: number;
+  suffer_score?: number;
   created_at: number;
 }
 
@@ -128,6 +129,7 @@ export interface StravaSummaryActivity {
   average_watts?: number;
   max_watts?: number;
   kilojoules?: number;
+  suffer_score?: number;
 }
 
 // Stats configuration types

@@ -5,13 +5,14 @@
 export const BASE_XP_PER_MINUTE = 10;
 
 // Heart rate zone multipliers (based on percentage of max HR)
-// Assumes max HR ~220 - age (you can customize this)
+// HR is the primary intensity signal - higher HR = harder workout = more XP
+// Wide multiplier spread to differentiate easy walks from hard efforts
 export const HR_ZONE_MULTIPLIERS = {
-  zone1: { min: 0, max: 60, multiplier: 1.0 },    // Recovery (50-60% max HR)
-  zone2: { min: 60, max: 70, multiplier: 1.2 },   // Aerobic (60-70% max HR)
-  zone3: { min: 70, max: 80, multiplier: 1.5 },   // Tempo (70-80% max HR)
-  zone4: { min: 80, max: 90, multiplier: 1.8 },   // Threshold (80-90% max HR)
-  zone5: { min: 90, max: 100, multiplier: 2.0 },  // VO2 Max (90%+ max HR)
+  zone1: { min: 0, max: 60, multiplier: 0.8 },    // Recovery/very easy - penalized
+  zone2: { min: 60, max: 70, multiplier: 1.0 },   // Easy aerobic - baseline
+  zone3: { min: 70, max: 80, multiplier: 1.5 },   // Tempo - moderate bonus
+  zone4: { min: 80, max: 90, multiplier: 2.0 },   // Threshold - significant bonus
+  zone5: { min: 90, max: 100, multiplier: 2.5 },  // VO2 Max - maximum bonus
 };
 
 // Watt zone multipliers for cycling (based on FTP)

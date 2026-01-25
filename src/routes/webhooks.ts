@@ -101,7 +101,11 @@ async function processWebhookEvent(env: Env, event: any): Promise<void> {
   if (aspect_type === 'create' || aspect_type === 'update') {
     // Ensure token is valid
     const stravaAuth = new StravaAuth(env);
-    const tokenInfo = await stravaAuth.ensureValidToken(user);
+    const tokenInfo = await stravaAuth.ensureValidToken(
+      user.access_token,
+      user.refresh_token,
+      user.expires_at
+    );
 
     if (tokenInfo.refreshed) {
       await userRepo.updateTokens(

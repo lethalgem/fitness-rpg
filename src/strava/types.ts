@@ -53,6 +53,7 @@ export interface StravaSummaryActivity {
   commute?: boolean;
   manual?: boolean;
   private?: boolean;
+  suffer_score?: number;  // Strava's Relative Effort (requires detailed activity fetch)
 }
 
 export interface StravaRateLimits {

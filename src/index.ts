@@ -9,6 +9,9 @@ import friends from './routes/friends';
 import leaderboard from './routes/leaderboard';
 import webhooks from './routes/webhooks';
 import cronHandler from './cron';
+import { createDbClient } from './db/client';
+import { UserRepository } from './db/users';
+import { ActivityRepository } from './db/activities';
 
 const app = new Hono<{ Bindings: Env }>();
 

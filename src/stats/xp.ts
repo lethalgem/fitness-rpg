@@ -33,20 +33,21 @@ export function calculateActivityXP(activity: Activity): XPCalculation {
   const baseXP = timeInMinutes * BASE_XP_PER_MINUTE;
 
   // Try different intensity calculations in order of preference
+  // HR is the primary intensity signal - it's the great equalizer across activities
   let intensityMultiplier = 1.0;
   let intensitySource: XPCalculation['intensitySource'] = 'default';
 
-  // 1. Heart rate (most accurate)
+  // 1. Heart rate (primary - works across all activity types)
   if (activity.average_heartrate) {
     intensityMultiplier = getHRIntensityMultiplier(activity.average_heartrate);
     intensitySource = 'heartrate';
   }
-  // 2. Watts (for cycling)
+  // 2. Watts (for cycling without HR)
   else if (activity.average_watts && activity.sport_type?.toLowerCase().includes('ride')) {
     intensityMultiplier = getWattIntensityMultiplier(activity.average_watts);
     intensitySource = 'watts';
   }
-  // 3. Pace (for running/walking)
+  // 3. Pace (for running/walking without HR)
   else if (activity.average_speed && isRunningActivity(activity.sport_type || '')) {
     intensityMultiplier = getPaceIntensityMultiplier(activity.average_speed);
     intensitySource = 'pace';

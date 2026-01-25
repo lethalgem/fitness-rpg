@@ -328,33 +328,30 @@
             <!-- Intensity Multipliers -->
             <section class="explainer-section">
               <h3>Intensity Multipliers</h3>
-              <p class="intensity-intro">Higher intensity = more XP! We use your heart rate, power, or pace data when available.</p>
+              <p class="intensity-intro">Higher intensity = more XP! Based on your heart rate zones (% of max HR).</p>
               <div class="intensity-zones">
                 <div class="zone-row">
-                  <span class="zone-label">No data</span>
+                  <span class="zone-label">Zone 1 (0-60%)</span>
+                  <span class="zone-mult">0.8×</span>
+                </div>
+                <div class="zone-row">
+                  <span class="zone-label">Zone 2 (60-70%)</span>
                   <span class="zone-mult">1.0×</span>
                 </div>
                 <div class="zone-row">
-                  <span class="zone-label">Zone 1 (0-60% HR)</span>
-                  <span class="zone-mult">1.0×</span>
-                </div>
-                <div class="zone-row">
-                  <span class="zone-label">Zone 2 (60-70% HR)</span>
-                  <span class="zone-mult">1.2×</span>
-                </div>
-                <div class="zone-row">
-                  <span class="zone-label">Zone 3 (70-80% HR)</span>
+                  <span class="zone-label">Zone 3 (70-80%)</span>
                   <span class="zone-mult">1.5×</span>
                 </div>
                 <div class="zone-row">
-                  <span class="zone-label">Zone 4 (80-90% HR)</span>
-                  <span class="zone-mult">1.8×</span>
-                </div>
-                <div class="zone-row">
-                  <span class="zone-label">Zone 5 (90%+ HR)</span>
+                  <span class="zone-label">Zone 4 (80-90%)</span>
                   <span class="zone-mult">2.0×</span>
                 </div>
+                <div class="zone-row">
+                  <span class="zone-label">Zone 5 (90%+)</span>
+                  <span class="zone-mult">2.5×</span>
+                </div>
               </div>
+              <p class="intensity-fallback">Fallback: Power zones (cycling) or pace (running) when heart rate unavailable.</p>
             </section>
 
             <!-- Leveling -->

@@ -17,8 +17,8 @@ export interface XPCalculation {
 }
 
 export function calculateActivityXP(activity: Activity): XPCalculation {
-  // Use moving_time if available, otherwise elapsed_time
-  const timeInMinutes = ((activity.moving_time || activity.elapsed_time || 0) / 60);
+  // Use elapsed_time (total duration) - HR multiplier already adjusts for intensity
+  const timeInMinutes = ((activity.elapsed_time || activity.moving_time || 0) / 60);
 
   if (timeInMinutes === 0) {
     return {

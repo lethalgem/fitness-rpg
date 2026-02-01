@@ -420,7 +420,7 @@ async function loadRecentActivities(userId, limit = 10) {
     activityList.innerHTML = activities.map(activity => {
       const date = new Date(activity.start_date_local || activity.start_date);
       const timeAgo = getTimeAgo(date);
-      const minutes = Math.round((activity.moving_time || activity.elapsed_time || 0) / 60);
+      const minutes = Math.round((activity.elapsed_time || activity.moving_time || 0) / 60);
       const hours = (minutes / 60).toFixed(1);
       const miles = ((activity.distance || 0) / 1609.34).toFixed(1);
 

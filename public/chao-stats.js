@@ -254,7 +254,7 @@
     return activities.slice(0, 10).map(activity => {
       const sportType = activity.sport_type ? formatSportType(activity.sport_type) : '';
       const distance = activity.distance ? `${(activity.distance / 1609.34).toFixed(1)} mi` : '';
-      const minutes = Math.round((activity.moving_time || activity.elapsed_time || 0) / 60);
+      const minutes = Math.round((activity.elapsed_time || activity.moving_time || 0) / 60);
       const time = activity.elapsed_time ? formatTime(activity.elapsed_time) : '';
       const details = [distance, time].filter(Boolean).join(' • ');
 

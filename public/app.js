@@ -1225,7 +1225,7 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
         const xpValue = isStatLeaderboard ? entry.stat_value : entry.total_xp;
 
         return `
-          <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''}">
+          <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''}" onclick="toggleLeaderboardActivities(this, ${entry.user_id}, 'weekly')">
             <div class="entry-rank">${rankBadge}</div>
             <div class="entry-avatar">
               ${entry.profile_url ?
@@ -1238,12 +1238,14 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
                 ${Math.round(xpValue).toLocaleString()} XP this week · ${entry.activities_count} activities
               </div>
             </div>
+            <div class="entry-expand-hint">tap to see activities</div>
+            <div class="entry-activities" data-loaded="false"></div>
           </div>
         `;
       } else {
         // All-time leaderboard format
         return `
-          <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''}">
+          <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''}" onclick="toggleLeaderboardActivities(this, ${entry.user_id}, 'all_time')">
             <div class="entry-rank">${rankBadge}</div>
             <div class="entry-avatar">
               ${entry.profile_url ?
@@ -1257,6 +1259,8 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
               </div>
             </div>
             <div class="entry-level">Lvl ${entry.level}</div>
+            <div class="entry-expand-hint">tap to see activities</div>
+            <div class="entry-activities" data-loaded="false"></div>
           </div>
         `;
       }
@@ -1375,6 +1379,91 @@ async function updateResetBanner(timePeriod) {
     console.error('Failed to fetch reset info', err);
     resetBanner.style.display = 'none';
   }
+}
+
+// ============================================
+// Expandable Leaderboard Activities
+// ============================================
+
+// Get the start of the current week (Monday, matching server's Sunday 11:59 PM EST reset)
+function getWeekStartDate() {
+  const now = new Date();
+  // Convert to Eastern Time for consistency with server
+  const eastern = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const dayOfWeek = eastern.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  // Week starts Monday (after Sunday 11:59 PM reset)
+  const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  eastern.setDate(eastern.getDate() - daysToSubtract);
+  eastern.setHours(0, 0, 0, 0);
+  return eastern.toISOString().split('T')[0]; // Return YYYY-MM-DD
+}
+
+// Toggle leaderboard entry to show/hide activities
+async function toggleLeaderboardActivities(element, userId, timePeriod) {
+  element.classList.toggle('expanded');
+
+  const activitiesContainer = element.querySelector('.entry-activities');
+  if (!activitiesContainer) return;
+
+  // If already loaded, just toggle visibility
+  if (activitiesContainer.dataset.loaded === 'true') return;
+
+  // Show loading state
+  activitiesContainer.innerHTML = '<div class="lb-activities-loading">Loading activities...</div>';
+
+  try {
+    // Build URL with date filter for weekly
+    let url = `/stats/${userId}/activities?limit=5`;
+    if (timePeriod === 'weekly') {
+      const weekStart = getWeekStartDate();
+      url += `&since=${weekStart}`;
+    }
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.success && data.data.activities) {
+      activitiesContainer.innerHTML = renderLeaderboardActivities(data.data.activities);
+    } else {
+      activitiesContainer.innerHTML = '<div class="lb-activities-empty">No activities found</div>';
+    }
+
+    activitiesContainer.dataset.loaded = 'true';
+  } catch (err) {
+    console.error('Failed to fetch activities', err);
+    activitiesContainer.innerHTML = '<div class="lb-activities-error">Failed to load activities</div>';
+  }
+}
+
+// Render activities for leaderboard expansion
+function renderLeaderboardActivities(activities) {
+  if (!activities || activities.length === 0) {
+    return '<div class="lb-activities-empty">No activities this period</div>';
+  }
+
+  const activitiesHtml = activities.map(activity => {
+    const name = activity.name || 'Untitled Activity';
+    const xp = activity.xp?.total || 0;
+    const sportType = activity.sport_type || '';
+
+    return `
+      <div class="lb-activity-item">
+        <div class="lb-activity-info">
+          <span class="lb-activity-name">${name}</span>
+          <span class="lb-activity-type">${formatSportName(sportType)}</span>
+        </div>
+        <span class="lb-activity-xp">+${Math.round(xp).toLocaleString()} XP</span>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="lb-activities-header">Latest activities</div>
+    <div class="lb-activities-list">
+      ${activitiesHtml}
+    </div>
+    <div class="lb-activities-hint">tap to collapse</div>
+  `;
 }
 
 // ============================================

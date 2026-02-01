@@ -1,7 +1,7 @@
 // Stats API routes
 
 import { Hono } from 'hono';
-import type { Env } from '../types';
+import type { Env, Activity } from '../types';
 import { createDbClient } from '../db/client';
 import { UserRepository } from '../db/users';
 import { ActivityRepository } from '../db/activities';
@@ -88,11 +88,13 @@ stats.get('/:userId', async (c) => {
 });
 
 // GET /stats/:userId/activities - Get recent activities
+// Optional: ?since=2024-01-28 to filter activities after a date
 stats.get('/:userId/activities', async (c) => {
   try {
     const userId = parseInt(c.req.param('userId'));
     const limit = parseInt(c.req.query('limit') || '20');
     const offset = parseInt(c.req.query('offset') || '0');
+    const since = c.req.query('since'); // Optional ISO date string
 
     if (isNaN(userId)) {
       return error('Invalid user ID');
@@ -101,8 +103,18 @@ stats.get('/:userId/activities', async (c) => {
     const dbClient = createDbClient(c.env);
     const activityRepo = new ActivityRepository(dbClient);
 
-    const activities = await activityRepo.findByUserId(userId, limit, offset);
-    const total = await activityRepo.countByUserId(userId);
+    let activities: Activity[];
+    let total: number;
+
+    if (since) {
+      // Convert ISO date to Unix timestamp for findByUserIdSince
+      const sinceTimestamp = Math.floor(new Date(since).getTime() / 1000);
+      activities = await activityRepo.findByUserIdSince(userId, sinceTimestamp, limit);
+      total = activities.length; // For filtered results, total is the count returned
+    } else {
+      activities = await activityRepo.findByUserId(userId, limit, offset);
+      total = await activityRepo.countByUserId(userId);
+    }
 
     // Add XP and stat breakdown to each activity
     const { calculateActivityXP } = await import('../stats/xp');

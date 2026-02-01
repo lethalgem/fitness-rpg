@@ -1653,6 +1653,117 @@ footer a {
   text-align: right;
 }
 
+/* Expandable Leaderboard Entries */
+.leaderboard-entry {
+  cursor: pointer;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.entry-expand-hint {
+  width: 100%;
+  text-align: center;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.5rem;
+  order: 10;
+}
+
+.leaderboard-entry.expanded .entry-expand-hint {
+  display: none;
+}
+
+.entry-activities {
+  width: 100%;
+  display: none;
+  order: 11;
+}
+
+.leaderboard-entry.expanded .entry-activities {
+  display: block;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+}
+
+.lb-activities-header {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.lb-activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lb-activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+}
+
+.lb-activity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.lb-activity-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lb-activity-type {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.lb-activity-xp {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #90EE90;
+  white-space: nowrap;
+  margin-left: 0.75rem;
+}
+
+.lb-activities-hint {
+  text-align: center;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.75rem;
+}
+
+.lb-activities-loading,
+.lb-activities-empty,
+.lb-activities-error {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.lb-activities-error {
+  color: #FF6B6B;
+}
+
 /* Responsive leaderboards */
 @media (max-width: 768px) {
   .leaderboard-entry {

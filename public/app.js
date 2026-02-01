@@ -78,6 +78,15 @@ async function loadDashboard(userId) {
       window.renderChaoStats(userId);
     }
 
+    // Restore saved tab (only once per page load)
+    if (!window._tabRestored) {
+      window._tabRestored = true;
+      const savedTab = localStorage.getItem('activeTab');
+      if (savedTab && savedTab !== 'stats') {
+        switchTab(savedTab);
+      }
+    }
+
     // If import is in progress, poll for updates
     if (import_status && (import_status.status === 'pending' || import_status.status === 'in_progress')) {
       setTimeout(() => loadDashboard(userId), 5000); // Poll every 5 seconds
@@ -585,6 +594,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function switchTab(tabName) {
+  // Save active tab to localStorage
+  localStorage.setItem('activeTab', tabName);
+
   // Update tab buttons
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tabName);
@@ -1027,13 +1039,20 @@ function createComparisonChart(userStats, friendStats) {
 // Leaderboards Tab Functions
 // ====================================
 
-let currentLeaderboardType = 'level';
+let currentLeaderboardType = localStorage.getItem('leaderboardType') || 'level';
 let currentSportType = null;
-let currentTimePeriod = 'weekly';
+let currentTimePeriod = localStorage.getItem('leaderboardPeriod') || 'weekly';
 
 async function loadLeaderboardsTab() {
   const userId = localStorage.getItem('userId');
   if (!userId) return;
+
+  // Restore saved settings to UI
+  document.querySelectorAll('.period-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.period === currentTimePeriod);
+  });
+  const categorySelect = document.getElementById('leaderboardCategory');
+  categorySelect.value = currentLeaderboardType;
 
   // Set up period selector
   document.querySelectorAll('.period-btn').forEach(btn => {
@@ -1041,6 +1060,7 @@ async function loadLeaderboardsTab() {
       document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentTimePeriod = btn.dataset.period;
+      localStorage.setItem('leaderboardPeriod', currentTimePeriod);
       currentSportType = null;
       document.getElementById('sportFilterCard').style.display = 'none';
       loadLeaderboard(userId, currentLeaderboardType, null, currentTimePeriod);
@@ -1049,9 +1069,9 @@ async function loadLeaderboardsTab() {
   });
 
   // Set up category selector
-  const categorySelect = document.getElementById('leaderboardCategory');
   categorySelect.onchange = () => {
     currentLeaderboardType = categorySelect.value;
+    localStorage.setItem('leaderboardType', currentLeaderboardType);
     currentSportType = null;
     document.getElementById('sportFilterCard').style.display = 'none';
     loadLeaderboard(userId, currentLeaderboardType, null, currentTimePeriod);

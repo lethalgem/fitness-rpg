@@ -18,6 +18,146 @@ const app = new Hono<{ Bindings: Env }>();
 // Enable CORS
 app.use('/*', cors());
 
+// Show migration notice on old workers.dev domain
+app.use('/*', async (c, next) => {
+  const url = new URL(c.req.url);
+  if (url.hostname === 'fitness-rpg.iancashdeveloper.workers.dev') {
+    const newUrl = new URL(c.req.url);
+    newUrl.hostname = 'fitness-rpg.iancash.me';
+    return c.html(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness RPG has moved!</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+      color: #2d3748;
+      overflow: hidden;
+      position: relative;
+    }
+    .clouds {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 100px;
+      animation: float-cloud 30s infinite ease-in-out;
+    }
+    .cloud:nth-child(1) { width: 120px; height: 50px; top: 10%; left: -120px; animation-delay: 0s; }
+    .cloud:nth-child(2) { width: 180px; height: 70px; top: 30%; left: -180px; animation-delay: 10s; }
+    .cloud:nth-child(3) { width: 140px; height: 60px; top: 60%; left: -140px; animation-delay: 20s; }
+    .cloud:nth-child(4) { width: 160px; height: 65px; top: 45%; left: -160px; animation-delay: 5s; }
+    .cloud:nth-child(5) { width: 130px; height: 55px; top: 75%; left: -130px; animation-delay: 15s; }
+    @keyframes float-cloud {
+      0%, 100% { transform: translateX(0) translateY(0); }
+      50% { transform: translateX(calc(100vw + 200px)) translateY(-20px); }
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 500px;
+      position: relative;
+      z-index: 1;
+    }
+    .title {
+      font-size: 3rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
+      margin-bottom: 1.5rem;
+      letter-spacing: 1px;
+    }
+    .card {
+      background: rgba(100, 180, 255, 0.85);
+      border: 4px solid rgba(255, 255, 255, 0.6);
+      padding: 2.5rem;
+      border-radius: 35px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+    }
+    .card h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
+      margin-bottom: 1rem;
+    }
+    .card p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+      margin-bottom: 0.5rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: rgba(30, 100, 200, 0.7);
+      border: 3px solid rgba(255, 255, 255, 0.5);
+      border-radius: 18px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: 'Fredoka', sans-serif;
+      color: white;
+      text-decoration: none;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      margin-top: 1rem;
+    }
+    .btn:hover {
+      background: rgba(30, 100, 200, 0.85);
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+    .note {
+      font-size: 0.9rem !important;
+      color: rgba(255, 255, 255, 0.7) !important;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="clouds">
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+  </div>
+  <div class="container">
+    <div class="title">Fitness RPG</div>
+    <div class="card">
+      <h2>We've moved!</h2>
+      <p>Fitness RPG has a new home. Please update your bookmarks!</p>
+      <a href="${newUrl.toString()}" class="btn">Go to fitness-rpg.iancash.me</a>
+      <p class="note">You'll be able to log in from the new site.</p>
+    </div>
+  </div>
+</body>
+</html>`);
+  }
+  return next();
+});
+
 // API routes
 app.route('/auth', auth);
 app.route('/stats', stats);

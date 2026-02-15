@@ -1,7 +1,7 @@
 // One-time script to force sync all users
 // This ensures no gap in activities when switching to webhook-based updates
 
-const API_BASE = 'https://fitness-rpg.iancashdeveloper.workers.dev';
+const API_BASE = 'https://fitness-rpg.iancash.me';
 
 // Rate limits: 600/15min, 6000/day
 const MAX_REQUESTS_PER_BATCH = 7; // Conservative - each user sync makes 1-2 requests

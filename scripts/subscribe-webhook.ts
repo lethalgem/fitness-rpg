@@ -3,7 +3,7 @@
 
 const STRAVA_CLIENT_ID = '119309';
 const STRAVA_CLIENT_SECRET = process.env.STRAVA_CLIENT_SECRET;
-const CALLBACK_URL = 'https://fitness-rpg.iancashdeveloper.workers.dev/webhooks/strava';
+const CALLBACK_URL = 'https://fitness-rpg.iancash.me/webhooks/strava';
 const VERIFY_TOKEN = 'fitness_rpg_webhook_2026';
 
 async function subscribe() {

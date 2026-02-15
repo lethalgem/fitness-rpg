@@ -19,9 +19,13 @@ const app = new Hono<{ Bindings: Env }>();
 app.use('/*', cors());
 
 // Show migration notice on old workers.dev domain
+// Allow webhook endpoints through so Strava webhooks still work during transition
 app.use('/*', async (c, next) => {
   const url = new URL(c.req.url);
   if (url.hostname === 'fitness-rpg.iancashdeveloper.workers.dev') {
+    if (url.pathname.startsWith('/webhooks/')) {
+      return next();
+    }
     const newUrl = new URL(c.req.url);
     newUrl.hostname = 'fitness-rpg.iancash.me';
     return c.html(`<!DOCTYPE html>

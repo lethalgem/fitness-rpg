@@ -143,29 +143,6 @@
   align-items: center;
   gap: 1.5rem;
   padding: 0;
-  animation: bounceIn 0.6s ease-out;
-}
-
-.chao-stat-card:nth-child(1) { animation-delay: 0.1s; }
-.chao-stat-card:nth-child(2) { animation-delay: 0.2s; }
-.chao-stat-card:nth-child(3) { animation-delay: 0.3s; }
-.chao-stat-card:nth-child(4) { animation-delay: 0.4s; }
-
-@keyframes bounceIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.3);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.9);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 
 .chao-stat-label {

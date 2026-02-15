@@ -26,7 +26,11 @@
       "Bash(for:*)",
       "Bash(do curl -s \"https://fitness-rpg.iancashdeveloper.workers.dev/cron/resync-suffer-scores\")",
       "Bash(done)",
-      "Bash(timeout 65 bash -c 'sleep 55 && curl -s \"\"https://fitness-rpg.iancashdeveloper.workers.dev/sync/resync-status\"\"')"
+      "Bash(timeout 65 bash -c 'sleep 55 && curl -s \"\"https://fitness-rpg.iancashdeveloper.workers.dev/sync/resync-status\"\"')",
+      "Bash(ls:*)",
+      "Bash(node:*)",
+      "Bash(python3:*)",
+      "Bash(npx tsx:*)"
     ]
   }
 }

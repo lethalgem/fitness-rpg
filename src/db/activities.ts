@@ -2,6 +2,7 @@
 
 import type { DatabaseClient } from './client';
 import type { Activity, StravaSummaryActivity } from '../types';
+import { calculateActivityXPBreakdown, type AggregatedXP } from '../stats/calculator';
 import { log } from '../utils/logger';
 
 export class ActivityRepository {
@@ -56,14 +57,17 @@ export class ActivityRepository {
     const statements: D1PreparedStatement[] = [];
 
     for (const activity of activities) {
+      // Pre-calculate XP at import time so stats can use SQL SUM
+      const xp = calculateActivityXPBreakdown(activity);
+
       const stmt = this.db['db'].prepare(
         `INSERT INTO activities (
           user_id, strava_activity_id, name, sport_type,
           start_date, start_date_local, distance, moving_time,
           elapsed_time, total_elevation_gain, average_speed, max_speed,
           average_heartrate, max_heartrate, average_watts, max_watts,
-          kilojoules, suffer_score, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          kilojoules, suffer_score, total_xp, strength_xp, endurance_xp, agility_xp, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(strava_activity_id) DO UPDATE SET
           name = excluded.name,
           sport_type = excluded.sport_type,
@@ -80,7 +84,11 @@ export class ActivityRepository {
           average_watts = excluded.average_watts,
           max_watts = excluded.max_watts,
           kilojoules = excluded.kilojoules,
-          suffer_score = excluded.suffer_score`
+          suffer_score = excluded.suffer_score,
+          total_xp = excluded.total_xp,
+          strength_xp = excluded.strength_xp,
+          endurance_xp = excluded.endurance_xp,
+          agility_xp = excluded.agility_xp`
       ).bind(
         userId,
         activity.id.toString(),
@@ -100,6 +108,10 @@ export class ActivityRepository {
         activity.max_watts || null,
         activity.kilojoules || null,
         activity.suffer_score || null,
+        xp.total_xp,
+        xp.strength_xp,
+        xp.endurance_xp,
+        xp.agility_xp,
         now
       );
 
@@ -110,6 +122,36 @@ export class ActivityRepository {
     log(`Batch upserted ${activities.length} activities`, { userId });
 
     return activities.length;
+  }
+
+  // Aggregate pre-calculated XP using SQL SUM (avoids loading all activities into JS)
+  async getAggregatedStats(userId: number): Promise<AggregatedXP> {
+    const result = await this.db.first<AggregatedXP>(
+      `SELECT
+        COALESCE(SUM(total_xp), 0) as total_xp,
+        COALESCE(SUM(strength_xp), 0) as strength_xp,
+        COALESCE(SUM(endurance_xp), 0) as endurance_xp,
+        COALESCE(SUM(agility_xp), 0) as agility_xp,
+        COUNT(*) as activities_count
+      FROM activities WHERE user_id = ?`,
+      [userId]
+    );
+    return result || { total_xp: 0, strength_xp: 0, endurance_xp: 0, agility_xp: 0, activities_count: 0 };
+  }
+
+  async getAggregatedStatsSince(userId: number, sinceTimestamp: number): Promise<AggregatedXP> {
+    const sinceDate = new Date(sinceTimestamp * 1000).toISOString();
+    const result = await this.db.first<AggregatedXP>(
+      `SELECT
+        COALESCE(SUM(total_xp), 0) as total_xp,
+        COALESCE(SUM(strength_xp), 0) as strength_xp,
+        COALESCE(SUM(endurance_xp), 0) as endurance_xp,
+        COALESCE(SUM(agility_xp), 0) as agility_xp,
+        COUNT(*) as activities_count
+      FROM activities WHERE user_id = ? AND start_date >= ?`,
+      [userId, sinceDate]
+    );
+    return result || { total_xp: 0, strength_xp: 0, endurance_xp: 0, agility_xp: 0, activities_count: 0 };
   }
 
   async deleteByUserId(userId: number): Promise<void> {

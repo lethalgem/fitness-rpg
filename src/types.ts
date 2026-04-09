@@ -46,6 +46,10 @@ export interface Activity {
   max_watts?: number;
   kilojoules?: number;
   suffer_score?: number;
+  total_xp?: number;
+  strength_xp?: number;
+  endurance_xp?: number;
+  agility_xp?: number;
   created_at: number;
 }
 

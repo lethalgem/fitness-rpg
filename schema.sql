@@ -38,6 +38,10 @@ CREATE TABLE IF NOT EXISTS activities (
   max_watts INTEGER,
   kilojoules REAL,
   suffer_score INTEGER,
+  total_xp REAL DEFAULT 0,
+  strength_xp REAL DEFAULT 0,
+  endurance_xp REAL DEFAULT 0,
+  agility_xp REAL DEFAULT 0,
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -46,6 +50,7 @@ CREATE INDEX idx_activities_user_id ON activities(user_id);
 CREATE INDEX idx_activities_strava_id ON activities(strava_activity_id);
 CREATE INDEX idx_activities_sport_type ON activities(sport_type);
 CREATE INDEX idx_activities_start_date ON activities(start_date);
+CREATE INDEX idx_activities_user_start ON activities(user_id, start_date);
 
 -- Import jobs table: tracks background imports of historical Strava data
 CREATE TABLE IF NOT EXISTS import_jobs (

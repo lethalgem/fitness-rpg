@@ -6,7 +6,7 @@ import { createDbClient } from '../db/client';
 import { UserRepository } from '../db/users';
 import { ActivityRepository } from '../db/activities';
 import { JobRepository } from '../db/jobs';
-import { calculateUserStats, calculateStatsBySport } from '../stats/calculator';
+import { calculateUserStatsFromAggregated, calculateStatsBySport } from '../stats/calculator';
 import { xpForNextLevel, xpForCurrentLevel } from '../config/xp';
 import { success, error, notFound } from '../utils/response';
 import { log } from '../utils/logger';
@@ -33,11 +33,12 @@ stats.get('/:userId', async (c) => {
       return notFound('User not found');
     }
 
-    // Get all activities
-    const activities = await activityRepo.findByUserId(userId, 10000); // Get all
+    // Aggregate stats using SQL SUM (avoids loading all activities into JS)
+    const agg = await activityRepo.getAggregatedStats(userId);
+    const calculatedStats = calculateUserStatsFromAggregated(agg);
 
-    // Calculate stats
-    const calculatedStats = calculateUserStats(activities);
+    // Sport breakdown still loads activities (user-initiated, paginated display)
+    const activities = await activityRepo.findByUserId(userId, 10000);
     const sportBreakdown = calculateStatsBySport(activities);
 
     // Get import job status

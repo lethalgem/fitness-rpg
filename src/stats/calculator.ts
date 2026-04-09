@@ -56,6 +56,56 @@ export function calculateUserStats(activities: Activity[]): CalculatedStats {
   };
 }
 
+// Calculate XP breakdown for a single activity (for storing at import time)
+export interface ActivityXPBreakdown {
+  total_xp: number;
+  strength_xp: number;
+  endurance_xp: number;
+  agility_xp: number;
+}
+
+export function calculateActivityXPBreakdown(activity: {
+  sport_type?: string;
+  elapsed_time?: number;
+  moving_time?: number;
+  average_heartrate?: number;
+  average_watts?: number;
+  average_speed?: number;
+}): ActivityXPBreakdown {
+  const xpCalc = calculateActivityXP(activity as Activity);
+  const statMapping = getStatMapping(activity.sport_type || 'Unknown');
+
+  return {
+    total_xp: xpCalc.totalXP,
+    strength_xp: xpCalc.totalXP * statMapping.strength,
+    endurance_xp: xpCalc.totalXP * statMapping.endurance,
+    agility_xp: xpCalc.totalXP * statMapping.agility,
+  };
+}
+
+// Build CalculatedStats from pre-aggregated SQL SUM results
+export interface AggregatedXP {
+  total_xp: number;
+  strength_xp: number;
+  endurance_xp: number;
+  agility_xp: number;
+  activities_count: number;
+}
+
+export function calculateUserStatsFromAggregated(agg: AggregatedXP): CalculatedStats {
+  return {
+    strength: Math.round(agg.strength_xp),
+    endurance: Math.round(agg.endurance_xp),
+    agility: Math.round(agg.agility_xp),
+    strength_level: calculateLevel(agg.strength_xp),
+    endurance_level: calculateLevel(agg.endurance_xp),
+    agility_level: calculateLevel(agg.agility_xp),
+    total_xp: Math.round(agg.total_xp),
+    level: calculateLevel(agg.total_xp),
+    activities_count: agg.activities_count,
+  };
+}
+
 // Calculate stats breakdown by sport type
 export interface SportStats {
   sport_type: string;

@@ -9,7 +9,7 @@ import { RateLimiter } from './jobs/rate-limiter';
 import { UserRepository } from './db/users';
 import { ActivityRepository } from './db/activities';
 import { UserStatsRepository } from './db/user-stats';
-import { calculateUserStats } from './stats/calculator';
+import { calculateUserStatsFromAggregated } from './stats/calculator';
 import { log, error as logError } from './utils/logger';
 
 async function processImports(env: Env): Promise<void> {
@@ -123,22 +123,13 @@ async function cacheAllUserStats(env: Env): Promise<void> {
     // Update stats for each user
     for (const user of users) {
       try {
-        // Get user's all-time activities
-        const allActivities = await activityRepo.findByUserId(user.id, 10000);
-
-        // Calculate all-time stats
-        const allTimeStats = calculateUserStats(allActivities);
-
-        // Cache all-time stats
+        // Aggregate stats using SQL SUM (avoids loading all activities into JS)
+        const allTimeAgg = await activityRepo.getAggregatedStats(user.id);
+        const allTimeStats = calculateUserStatsFromAggregated(allTimeAgg);
         await statsRepo.upsertOverallStats(user.id, allTimeStats, 'all_time');
 
-        // Get user's weekly activities (since Sunday 23:59 ET)
-        const weeklyActivities = await activityRepo.findByUserIdSince(user.id, weekStartTimestamp, 10000);
-
-        // Calculate weekly stats
-        const weeklyStats = calculateUserStats(weeklyActivities);
-
-        // Cache weekly stats
+        const weeklyAgg = await activityRepo.getAggregatedStatsSince(user.id, weekStartTimestamp);
+        const weeklyStats = calculateUserStatsFromAggregated(weeklyAgg);
         await statsRepo.upsertOverallStats(user.id, weeklyStats, 'weekly');
 
         successCount++;

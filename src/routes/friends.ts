@@ -6,7 +6,7 @@ import { createDbClient } from '../db/client';
 import { UserRepository } from '../db/users';
 import { FriendshipRepository } from '../db/friendships';
 import { ActivityRepository } from '../db/activities';
-import { calculateUserStats } from '../stats/calculator';
+import { calculateUserStatsFromAggregated } from '../stats/calculator';
 import { success, error, notFound } from '../utils/response';
 import { log } from '../utils/logger';
 
@@ -57,9 +57,9 @@ friends.get('/:userId', async (c) => {
         const friend = await userRepo.findById(friendship.friend_id);
         if (!friend) return null;
 
-        // Get friend's activities and calculate stats
-        const activities = await activityRepo.findByUserId(friend.id, 10000);
-        const stats = calculateUserStats(activities);
+        // Aggregate stats using SQL SUM (avoids loading all activities into JS)
+        const agg = await activityRepo.getAggregatedStats(friend.id);
+        const stats = calculateUserStatsFromAggregated(agg);
 
         return {
           id: friend.id,

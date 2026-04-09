@@ -10,7 +10,7 @@ import { createDbClient } from '../db/client';
 import { UserRepository } from '../db/users';
 import { ActivityRepository } from '../db/activities';
 import { UserStatsRepository } from '../db/user-stats';
-import { calculateUserStats } from '../stats/calculator';
+import { calculateUserStatsFromAggregated } from '../stats/calculator';
 
 const webhooks = new Hono<{ Bindings: Env }>();
 
@@ -138,18 +138,15 @@ async function updateUserStats(env: Env, userId: number): Promise<void> {
   const activityRepo = new ActivityRepository(dbClient);
   const statsRepo = new UserStatsRepository(dbClient);
 
-  // Get all activities
-  const allActivities = await activityRepo.findByUserId(userId, 10000);
-
-  // Calculate all-time stats
-  const allTimeStats = calculateUserStats(allActivities);
+  // Aggregate stats using SQL SUM (avoids loading all activities into JS)
+  const allTimeAgg = await activityRepo.getAggregatedStats(userId);
+  const allTimeStats = calculateUserStatsFromAggregated(allTimeAgg);
   await statsRepo.upsertOverallStats(userId, allTimeStats, 'all_time');
 
-  // Calculate weekly stats (using Sunday 23:59 ET reset boundary)
   const { getStartOfWeek } = await import('../utils/time');
   const weekStartTimestamp = getStartOfWeek();
-  const weeklyActivities = await activityRepo.findByUserIdSince(userId, weekStartTimestamp, 10000);
-  const weeklyStats = calculateUserStats(weeklyActivities);
+  const weeklyAgg = await activityRepo.getAggregatedStatsSince(userId, weekStartTimestamp);
+  const weeklyStats = calculateUserStatsFromAggregated(weeklyAgg);
   await statsRepo.upsertOverallStats(userId, weeklyStats, 'weekly');
 
   log('Stats updated from webhook', { userId });

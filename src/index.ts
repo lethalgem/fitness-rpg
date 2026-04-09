@@ -206,7 +206,7 @@ app.get('/debug/weekly-activities/:userId', async (c) => {
 
     const { createDbClient } = await import('./db/client');
     const { ActivityRepository } = await import('./db/activities');
-    const { calculateUserStats } = await import('./stats/calculator');
+    const { calculateUserStatsFromAggregated } = await import('./stats/calculator');
 
     const dbClient = createDbClient(c.env);
     const activityRepo = new ActivityRepository(dbClient);
@@ -216,19 +216,20 @@ app.get('/debug/weekly-activities/:userId', async (c) => {
     const now = Math.floor(Date.now() / 1000);
     const weekStartTimestamp = getStartOfWeek();
 
-    // Fetch weekly activities
-    const weeklyActivities = await activityRepo.findByUserIdSince(userId, weekStartTimestamp, 10000);
-    const allActivities = await activityRepo.findByUserId(userId, 10000);
+    // Aggregate stats using SQL SUM
+    const weeklyAgg = await activityRepo.getAggregatedStatsSince(userId, weekStartTimestamp);
+    const allTimeAgg = await activityRepo.getAggregatedStats(userId);
 
-    // Calculate stats
-    const weeklyStats = calculateUserStats(weeklyActivities);
-    const allTimeStats = calculateUserStats(allActivities);
+    const weeklyActivities = await activityRepo.findByUserIdSince(userId, weekStartTimestamp, 10000);
+
+    const weeklyStats = calculateUserStatsFromAggregated(weeklyAgg);
+    const allTimeStats = calculateUserStatsFromAggregated(allTimeAgg);
 
     return c.json({
       now: new Date(now * 1000).toISOString(),
       weekStart: new Date(weekStartTimestamp * 1000).toISOString(),
       weeklyActivitiesCount: weeklyActivities.length,
-      allTimeActivitiesCount: allActivities.length,
+      allTimeActivitiesCount: allTimeAgg.activities_count,
       weeklyActivities: weeklyActivities.map(a => ({
         id: a.id,
         sport_type: a.sport_type,
@@ -254,6 +255,46 @@ app.get('/debug/weekly-activities/:userId', async (c) => {
   } catch (err) {
     console.error('Debug endpoint failed', err);
     return c.json({ error: 'Failed to fetch debug info', details: String(err) }, 500);
+  }
+});
+
+// Backfill XP columns for existing activities (run once after migration)
+app.get('/admin/backfill-xp', async (c) => {
+  try {
+    const { createDbClient } = await import('./db/client');
+    const { calculateActivityXPBreakdown } = await import('./stats/calculator');
+
+    const dbClient = createDbClient(c.env);
+    const batchSize = 200;
+    let totalUpdated = 0;
+
+    while (true) {
+      // Fetch activities that haven't been backfilled yet
+      const activities = await dbClient.all<any>(
+        'SELECT id, sport_type, elapsed_time, moving_time, average_heartrate, average_watts, average_speed FROM activities WHERE total_xp = 0 OR total_xp IS NULL LIMIT ?',
+        [batchSize]
+      );
+
+      if (activities.length === 0) break;
+
+      const statements: D1PreparedStatement[] = [];
+      for (const activity of activities) {
+        const xp = calculateActivityXPBreakdown(activity);
+        statements.push(
+          c.env.DB.prepare(
+            'UPDATE activities SET total_xp = ?, strength_xp = ?, endurance_xp = ?, agility_xp = ? WHERE id = ?'
+          ).bind(xp.total_xp, xp.strength_xp, xp.endurance_xp, xp.agility_xp, activity.id)
+        );
+      }
+
+      await c.env.DB.batch(statements);
+      totalUpdated += activities.length;
+    }
+
+    return c.json({ success: true, totalUpdated });
+  } catch (err) {
+    console.error('Backfill failed', err);
+    return c.json({ error: 'Backfill failed', details: String(err) }, 500);
   }
 });
 

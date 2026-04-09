@@ -146,3 +146,7 @@ dist
 
 # Worker related files
 .dev.vars
+.wrangler/
+
+# Claude Code plugin artifacts
+.github/hooks/context-mode.json

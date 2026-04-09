@@ -157,6 +157,23 @@ export interface CalculatedStats {
   activities_count: number;
 }
 
+// Medal/placement types
+export interface MedalCounts {
+  gold: number;
+  silver: number;
+  bronze: number;
+}
+
+export interface WeeklyPlacement {
+  id: number;
+  week_ending: string;
+  category: string;
+  placement: number;
+  user_id: number;
+  stat_value: number;
+  created_at: number;
+}
+
 // API response types
 export interface ApiResponse<T = any> {
   success: boolean;

@@ -126,3 +126,34 @@ CREATE INDEX IF NOT EXISTS idx_friendships_user_id ON friendships(user_id);
 CREATE INDEX IF NOT EXISTS idx_friendships_friend_id ON friendships(friend_id);
 CREATE INDEX IF NOT EXISTS idx_friendships_status ON friendships(status);
 CREATE INDEX IF NOT EXISTS idx_friendships_user_status ON friendships(user_id, status);
+
+-- Weekly leaderboard placement snapshots
+CREATE TABLE IF NOT EXISTS weekly_placements (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  week_ending TEXT NOT NULL,
+  category TEXT NOT NULL,
+  placement INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  stat_value REAL NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE(week_ending, category, placement)
+);
+
+CREATE INDEX IF NOT EXISTS idx_weekly_placements_user ON weekly_placements(user_id);
+CREATE INDEX IF NOT EXISTS idx_weekly_placements_week ON weekly_placements(week_ending);
+
+-- Pre-aggregated medal counts per user per category
+CREATE TABLE IF NOT EXISTS medal_counts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  category TEXT NOT NULL,
+  gold INTEGER NOT NULL DEFAULT 0,
+  silver INTEGER NOT NULL DEFAULT 0,
+  bronze INTEGER NOT NULL DEFAULT 0,
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE(user_id, category)
+);
+
+CREATE INDEX IF NOT EXISTS idx_medal_counts_user ON medal_counts(user_id);

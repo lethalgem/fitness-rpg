@@ -9,6 +9,7 @@ import { RateLimiter } from './jobs/rate-limiter';
 import { UserRepository } from './db/users';
 import { ActivityRepository } from './db/activities';
 import { UserStatsRepository } from './db/user-stats';
+import { PlacementsRepository } from './db/placements';
 import { calculateUserStatsFromAggregated } from './stats/calculator';
 import { log, error as logError } from './utils/logger';
 
@@ -150,6 +151,68 @@ async function cacheAllUserStats(env: Env): Promise<void> {
   }
 }
 
+const SNAPSHOT_CATEGORIES = ['level', 'strength', 'endurance', 'agility', 'activities'] as const;
+const MIN_PARTICIPANTS = 3;
+
+async function snapshotWeeklyPlacements(env: Env): Promise<void> {
+  const dbClient = createDbClient(env);
+  const placementsRepo = new PlacementsRepository(dbClient);
+  const statsRepo = new UserStatsRepository(dbClient);
+
+  const { getPreviousWeekEnding } = await import('./utils/time');
+  const weekEnding = getPreviousWeekEnding();
+
+  // Already snapshotted this week boundary — skip
+  if (await placementsRepo.hasSnapshotForWeek(weekEnding)) {
+    return;
+  }
+
+  log('Snapshotting weekly placements', { weekEnding });
+
+  let totalPlaced = 0;
+
+  for (const category of SNAPSHOT_CATEGORIES) {
+    // Check participant count (only award medals with 3+ competitors)
+    const participantCount = await placementsRepo.getWeeklyParticipantCount(category);
+    if (participantCount < MIN_PARTICIPANTS) {
+      log(`Skipping ${category} snapshot — only ${participantCount} participants (need ${MIN_PARTICIPANTS})`, { category, weekEnding });
+      continue;
+    }
+
+    // Fetch top 3 using same queries as leaderboard
+    let top3;
+    switch (category) {
+      case 'level':
+        top3 = await statsRepo.getLevelLeaderboard(3, 0, 'weekly');
+        break;
+      case 'strength':
+      case 'endurance':
+      case 'agility':
+        top3 = await statsRepo.getStatLeaderboard(category, 3, 0, 'weekly');
+        break;
+      case 'activities':
+        top3 = await statsRepo.getActivityCountLeaderboard(3, 0, 'weekly');
+        break;
+    }
+
+    if (!top3 || top3.length === 0) continue;
+
+    for (let i = 0; i < Math.min(top3.length, 3); i++) {
+      const entry = top3[i];
+      const placement = i + 1;
+      const statValue = category === 'activities'
+        ? entry.activities_count
+        : (category === 'level' ? entry.total_xp : entry.stat_value);
+
+      await placementsRepo.insertPlacement(weekEnding, category, placement, entry.user_id, statValue);
+      await placementsRepo.incrementMedalCount(entry.user_id, category, placement);
+      totalPlaced++;
+    }
+  }
+
+  log('Weekly placement snapshot complete', { weekEnding, totalPlaced });
+}
+
 export default {
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     log('Cron job started', { scheduledTime: new Date(event.scheduledTime).toISOString() });
@@ -157,6 +220,9 @@ export default {
     try {
       // Process import jobs
       await processImports(env);
+
+      // Snapshot weekly leaderboard placements before stats get overwritten
+      await snapshotWeeklyPlacements(env);
 
       // Cache user stats for leaderboards
       await cacheAllUserStats(env);
@@ -168,4 +234,5 @@ export default {
 
   processImports,
   cacheAllUserStats,
+  snapshotWeeklyPlacements,
 };

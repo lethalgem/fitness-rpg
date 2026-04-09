@@ -1189,6 +1189,8 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
           </div>
         `;
 
+        const rankMedalsHtml = getMedalsHtml(userRankData.medals, 'rank-medals');
+
         userRanking.innerHTML = `
           <div class="rank-display">
             <div class="rank-number">#${userRankData.rank}</div>
@@ -1202,6 +1204,7 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
                 <span class="rank-label">Activities:</span>
                 <span class="rank-value">${userRankData.activities_count}</span>
               </div>
+              ${rankMedalsHtml}
             </div>
           </div>
         `;
@@ -1220,6 +1223,7 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
       const isCurrentUser = entry.user_id === parseInt(userId);
       const rankBadge = getRankBadge(entry.rank);
       const displayName = entry.name || 'Unknown User';
+      const medalsHtml = getMedalsHtml(entry.medals);
 
       if (sportType) {
         return `
@@ -1254,6 +1258,7 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
             </div>
             <div class="entry-info">
               <div class="entry-name">${displayName}</div>
+              ${medalsHtml}
               <div class="entry-stats">
                 ${Math.round(xpValue).toLocaleString()} XP this week · ${entry.activities_count} activities
               </div>
@@ -1274,6 +1279,7 @@ async function loadLeaderboard(userId, type, sportType = null, timePeriod = 'all
             </div>
             <div class="entry-info">
               <div class="entry-name">${displayName}</div>
+              ${medalsHtml}
               <div class="entry-stats">
                 Level ${entry.level} · ${entry.total_xp.toLocaleString()} XP · ${entry.activities_count} activities
               </div>
@@ -1339,6 +1345,15 @@ function getRankBadge(rank) {
     3: '🥉'
   };
   return badges[rank] || `#${rank}`;
+}
+
+function getMedalsHtml(medals, cssClass = 'entry-medals') {
+  if (!medals || (medals.gold + medals.silver + medals.bronze === 0)) return '';
+  return `<div class="${cssClass}">
+    ${medals.gold > 0 ? `<span class="medal gold">🥇<span class="medal-count">${medals.gold}</span></span>` : ''}
+    ${medals.silver > 0 ? `<span class="medal silver">🥈<span class="medal-count">${medals.silver}</span></span>` : ''}
+    ${medals.bronze > 0 ? `<span class="medal bronze">🥉<span class="medal-count">${medals.bronze}</span></span>` : ''}
+  </div>`;
 }
 
 function formatDistance(meters) {

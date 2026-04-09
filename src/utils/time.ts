@@ -126,6 +126,20 @@ export function getNextResetTime(now?: Date): number {
 }
 
 /**
+ * Get a date string (YYYY-MM-DD) for the Sunday that ended the previous week.
+ * This is the same Sunday returned by getStartOfWeek() — the boundary between
+ * the previous week and the current week.
+ */
+export function getPreviousWeekEnding(now?: Date): string {
+  const timestamp = getStartOfWeek(now);
+  const date = new Date(timestamp * 1000);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Format time until reset in human-readable form
  * @returns e.g., "2 days, 5 hours"
  */

@@ -4,6 +4,7 @@ import { Hono } from 'hono';
 import type { Env } from '../types';
 import { createDbClient } from '../db/client';
 import { UserStatsRepository } from '../db/user-stats';
+import { PlacementsRepository } from '../db/placements';
 import { success, error } from '../utils/response';
 import { log } from '../utils/logger';
 
@@ -43,9 +44,15 @@ leaderboard.get('/', async (c) => {
         return error('Invalid leaderboard type. Use: level, strength, endurance, agility, activities');
     }
 
+    // Batch-fetch medal counts for all users in this leaderboard
+    const placementsRepo = new PlacementsRepository(dbClient);
+    const userIds = leaderboardData.map(e => e.user_id);
+    const medalMap = await placementsRepo.getMedalCountsForUsers(userIds, type);
+
     // Format the response with display names
     const formattedLeaderboard = leaderboardData.map((entry, index) => {
       const displayName = entry.username || `${entry.firstname || ''} ${entry.lastname || ''}`.trim() || 'Unknown User';
+      const medals = medalMap.get(entry.user_id) || null;
 
       return {
         rank: offset + index + 1,
@@ -58,6 +65,7 @@ leaderboard.get('/', async (c) => {
         total_xp: entry.total_xp,
         stat_value: entry.stat_value,
         activities_count: entry.activities_count,
+        medals,
       };
     });
 
@@ -211,6 +219,9 @@ leaderboard.get('/me/:userId', async (c) => {
       return error('User stats not found. Stats may not be cached yet.');
     }
 
+    const placementsRepo = new PlacementsRepository(dbClient);
+    const medals = await placementsRepo.getMedalCountsForUser(userId, type);
+
     log('Fetched user rank', { userId, type, period, rank: rankData.rank });
 
     return success({
@@ -221,6 +232,7 @@ leaderboard.get('/me/:userId', async (c) => {
       total_xp: rankData.total_xp,
       stat_value: rankData.stat_value,
       activities_count: rankData.activities_count,
+      medals,
     });
   } catch (err) {
     console.error('Failed to fetch user rank', err);

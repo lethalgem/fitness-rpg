@@ -1616,6 +1616,83 @@ footer a {
   font-weight: 600;
 }
 
+/* Medal pills on leaderboard entries */
+.entry-medals {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0.15rem 0;
+}
+
+.entry-medals .medal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 8px;
+  font-family: 'Fredoka', 'Comic Neue', sans-serif;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.entry-medals .medal.gold {
+  background: rgba(255, 215, 0, 0.2);
+  border: 1.5px solid rgba(255, 215, 0, 0.35);
+}
+
+.entry-medals .medal.silver {
+  background: rgba(192, 192, 192, 0.2);
+  border: 1.5px solid rgba(192, 192, 192, 0.35);
+}
+
+.entry-medals .medal.bronze {
+  background: rgba(205, 127, 50, 0.2);
+  border: 1.5px solid rgba(205, 127, 50, 0.35);
+}
+
+.medal-count {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+}
+
+/* Medals in the user ranking card */
+.rank-medals {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.rank-medals .medal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  font-family: 'Fredoka', 'Comic Neue', sans-serif;
+  font-weight: 600;
+}
+
+.rank-medals .medal.gold {
+  background: rgba(255, 215, 0, 0.2);
+  border: 1.5px solid rgba(255, 215, 0, 0.35);
+}
+
+.rank-medals .medal.silver {
+  background: rgba(192, 192, 192, 0.2);
+  border: 1.5px solid rgba(192, 192, 192, 0.35);
+}
+
+.rank-medals .medal.bronze {
+  background: rgba(205, 127, 50, 0.2);
+  border: 1.5px solid rgba(205, 127, 50, 0.35);
+}
+
+.rank-medals .medal-count {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+}
+
 .gap-info {
   font-size: 0.8rem;
   font-weight: 600;
@@ -1801,6 +1878,16 @@ footer a {
 
   .entry-name {
     font-size: 0.95rem;
+  }
+
+  .entry-medals .medal {
+    font-size: 0.65rem;
+    padding: 0.05rem 0.25rem;
+  }
+
+  .rank-medals .medal {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
   }
 
   .entry-username {
